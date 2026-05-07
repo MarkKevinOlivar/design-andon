@@ -28,6 +28,25 @@
   --quality:    #CE93D8;
   --accent:     #7C83FD;
 }
+
+body.light-mode {
+  --bg:         #f5f5f5;
+  --surface:    #ffffff;
+  --surface2:   #ebebeb;
+  --border:     rgba(0,0,0,0.08);
+  --border2:    rgba(0,0,0,0.15);
+  --text:       #0a0a0a;
+  --muted:      rgba(10,10,10,0.52);
+  --dim:        rgba(10,10,10,0.28);
+  --lot:        #0277BD;
+  --lot-bg:     rgba(2,119,189,0.07);
+  --community:  #2E7D32;
+  --comm-bg:    rgba(46,125,50,0.07);
+  --commercial: #F7941D;
+  --coml-bg:    rgba(247,148,29,0.08);
+  --quality:    #6A1B9A;
+  --accent:     #F7941D;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:18px;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
@@ -241,7 +260,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .rk-total{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;min-width:36px;text-align:right;flex-shrink:0;}
 .rk-qual{font-family:'DM Mono',monospace;font-size:.68rem;min-width:46px;text-align:right;flex-shrink:0;}
 
-/* Manual controls */
+/* ─── LIGHT MODE (SunPower Brand) OVERRIDES ─── */
+body.light-mode .ip-overlay,
+body.light-mode #nh-overlay,
+body.light-mode #sla-targets-overlay,
+body.light-mode #settings-overlay { background:rgba(0,0,0,0.45); }
+body.light-mode .slicer-btn { border-color:rgba(0,0,0,0.15); color:var(--muted); }
+body.light-mode .slicer-btn:hover { color:var(--text); border-color:var(--text); }
+body.light-mode .slicer-btn.active { background:#F7941D; border-color:#F7941D; color:#fff; }
+body.light-mode .rotate-bar { background:rgba(0,0,0,0.08); }
+body.light-mode .rotate-bar-fill { background:#F7941D; }
+body.light-mode .new-hire-tag { background:rgba(247,148,29,0.12); color:#F7941D; border-color:rgba(247,148,29,0.3); }
+body.light-mode .board-header { background:#0a0a0a; border-bottom-color:#F7941D; }
+body.light-mode .board-title { color:#ffffff; }
+body.light-mode .board-title span { color:#F7941D; }
+body.light-mode .screen-label { color:var(--muted); }
+body.light-mode .btn-pause { color:#ffffff; border-color:rgba(255,255,255,0.3); }
+body.light-mode .btn-pause:hover { color:#F7941D; border-color:#F7941D; }
+body.light-mode .btn-xs { color:#ffffff; border-color:rgba(255,255,255,0.25); }
+body.light-mode .btn-xs:hover { color:#F7941D; border-color:#F7941D; }
+body.light-mode .live-pill { color:#F7941D; }
+body.light-mode .live-pill::before { background:#F7941D; box-shadow:0 0 10px #F7941D; }
+body.light-mode .ts { color:rgba(255,255,255,0.5); }
+body.light-mode #theme-btn { color:#ffffff; border-color:rgba(255,255,255,0.25); }
+body.light-mode .screen-dot { border-color:rgba(255,255,255,0.3); }
+body.light-mode .screen-dot.active { background:#F7941D; border-color:#F7941D; }
 .screen-controls{display:flex;align-items:center;gap:.6rem;}
 .btn-pause{
   background:transparent;border:1px solid var(--border2);color:var(--muted);
@@ -370,6 +413,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <button class="btn-xs hi" onclick="openIP()" style="border-color:rgba(255,183,77,.4);color:#FFB74D;" id="ip-btn">✎ In Progress</button>
         <button class="btn-xs hi" onclick="openNewHires()" style="border-color:rgba(206,147,216,.4);color:#CE93D8;">✎ New Hires</button>
         <button class="btn-xs hi" onclick="openSettings()" style="border-color:rgba(124,131,253,.4);color:#a5a9ff;">⚙ Settings</button>
+        <button class="btn-xs" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
       </div>
       <div class="live-pill">LIVE</div>
       <div class="ts" id="ts"></div>
@@ -2443,6 +2487,25 @@ function fetchIPFromGitHub(){
     })
     .catch(()=>{});
 }
+
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light-mode');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+  try{ localStorage.setItem('andon_theme', isLight?'light':'dark'); }catch(e){}
+}
+
+/* Apply saved theme on load */
+(function(){
+  try{
+    if(localStorage.getItem('andon_theme')==='light'){
+      document.body.classList.add('light-mode');
+      document.addEventListener('DOMContentLoaded',()=>{
+        const btn=document.getElementById('theme-btn');
+        if(btn) btn.textContent='☀️';
+      });
+    }
+  }catch(e){}
+})();
 
 setInterval(updateTs,60000);
 </script>
