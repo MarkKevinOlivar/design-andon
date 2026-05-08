@@ -245,8 +245,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem;flex-wrap:wrap;gap:.5rem;}
 .panel-title{font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);}
 .trend-legend{display:flex;gap:1.1rem;flex-wrap:wrap;}
-.leg-item{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--muted);}
-.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .chart-wrap{position:relative;width:100%;flex:1;min-height:0;}
 .rank-row{display:flex;align-items:center;gap:1rem;padding:.35rem 0;border-bottom:1px solid var(--border);}
 .rank-row:last-child{border-bottom:none;}
@@ -1261,6 +1261,18 @@ function renderScreen3(designers,rows){
 }
 
 /* SCREEN 4 — Lot-Level Weekly Report (ISO week, quarter+month slicers) */
+/* ── CHART COLOR HELPER — adapts to dark/light mode ── */
+function cc(){
+  const light=document.body.classList.contains('light-mode');
+  return {
+    tick:       light?'rgba(10,10,10,.6)' :'rgba(238,240,244,.55)',
+    tickFade:   light?'rgba(10,10,10,.45)':'rgba(238,240,244,.35)',
+    tickDim:    light?'rgba(10,10,10,.32)':'rgba(238,240,244,.3)',
+    grid:       light?'rgba(0,0,0,.08)'   :'rgba(255,255,255,.05)',
+    purple:     light?'rgba(106,27,154,.8)':'rgba(206,147,216,.7)',
+  };
+}
+
 function isoWeek(date){
   const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
   const day=d.getUTCDay()||7;
@@ -1425,15 +1437,15 @@ function renderScreen4(){
         }
       },
       scales:{
-        x:{ stacked:true, ticks:{color:'rgba(238,240,244,.55)',font:{size:11},autoSkip:false,maxRotation:45}, grid:{color:'rgba(255,255,255,.05)'} },
+        x:{ stacked:true, ticks:{color:cc().tick,font:{size:14},autoSkip:false,maxRotation:45}, grid:{color:cc().grid} },
         y:{ stacked:true, beginAtZero:true, position:'left',
-            ticks:{color:'rgba(238,240,244,.35)',font:{size:11},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
-            grid:{color:'rgba(255,255,255,.05)'},
-            title:{display:true,text:'Designs',color:'rgba(238,240,244,.3)',font:{size:10}} },
+            ticks:{color:cc().tickFade,font:{size:14},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
+            grid:{color:cc().grid},
+            title:{display:true,text:'Designs',color:cc().tickDim,font:{size:12}} },
         y2:{ beginAtZero:true, max:100, position:'right',
-             ticks:{color:'rgba(206,147,216,.7)',font:{size:11},callback:v=>v+'%'},
+             ticks:{color:cc().purple,font:{size:14},callback:v=>v+'%'},
              grid:{drawOnChartArea:false},
-             title:{display:true,text:'Rework rate %',color:'rgba(206,147,216,.6)',font:{size:10}} }
+             title:{display:true,text:'Rework rate %',color:cc().purple,font:{size:12}} }
       }
     }
   });
@@ -1589,15 +1601,15 @@ function renderScreen5(){
         }}}
       },
       scales:{
-        x:{ stacked:true, ticks:{color:'rgba(238,240,244,.55)',font:{size:11},autoSkip:false,maxRotation:45}, grid:{color:'rgba(255,255,255,.05)'} },
+        x:{ stacked:true, ticks:{color:cc().tick,font:{size:14},autoSkip:false,maxRotation:45}, grid:{color:cc().grid} },
         y:{ stacked:true, beginAtZero:true, position:'left',
-            ticks:{color:'rgba(238,240,244,.35)',font:{size:11},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
-            grid:{color:'rgba(255,255,255,.05)'},
-            title:{display:true,text:'Designs',color:'rgba(238,240,244,.3)',font:{size:10}} },
+            ticks:{color:cc().tickFade,font:{size:14},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
+            grid:{color:cc().grid},
+            title:{display:true,text:'Designs',color:cc().tickDim,font:{size:12}} },
         y2:{ beginAtZero:true, max:100, position:'right',
-             ticks:{color:'rgba(206,147,216,.7)',font:{size:11},callback:v=>v+'%'},
+             ticks:{color:cc().purple,font:{size:14},callback:v=>v+'%'},
              grid:{drawOnChartArea:false},
-             title:{display:true,text:'Rework rate %',color:'rgba(206,147,216,.6)',font:{size:10}} }
+             title:{display:true,text:'Rework rate %',color:cc().purple,font:{size:12}} }
       }
     }
   });
@@ -1778,9 +1790,9 @@ function renderScreen6(){
         tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'d':'—'}`}}
       },
       scales:{
-        x:{ticks:{color:'rgba(238,240,244,.55)',font:{size:11},autoSkip:false,maxRotation:45},grid:{color:'rgba(255,255,255,.05)'}},
-        y:{beginAtZero:true,ticks:{color:'rgba(238,240,244,.35)',font:{size:11},callback:v=>v+'d'},grid:{color:'rgba(255,255,255,.05)'},
-           title:{display:true,text:'Days',color:'rgba(238,240,244,.3)',font:{size:10}}}
+        x:{ticks:{color:cc().tick,font:{size:14},autoSkip:false,maxRotation:45},grid:{color:cc().grid}},
+        y:{beginAtZero:true,ticks:{color:cc().tickFade,font:{size:14},callback:v=>v+'d'},grid:{color:cc().grid},
+           title:{display:true,text:'Days',color:cc().tickDim,font:{size:12}}}
       }
     }
   });
@@ -1971,15 +1983,15 @@ function renderScreen7(){
         }}}
       },
       scales:{
-        x:{ stacked:true, ticks:{color:'rgba(238,240,244,.55)',font:{size:11},autoSkip:false,maxRotation:45}, grid:{color:'rgba(255,255,255,.05)'} },
+        x:{ stacked:true, ticks:{color:cc().tick,font:{size:14},autoSkip:false,maxRotation:45}, grid:{color:cc().grid} },
         y:{ stacked:true, beginAtZero:true, position:'left',
-            ticks:{color:'rgba(238,240,244,.35)',font:{size:11},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
-            grid:{color:'rgba(255,255,255,.05)'},
-            title:{display:true,text:'Permits',color:'rgba(238,240,244,.3)',font:{size:10}} },
+            ticks:{color:cc().tickFade,font:{size:14},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
+            grid:{color:cc().grid},
+            title:{display:true,text:'Permits',color:cc().tickDim,font:{size:12}} },
         y2:{ beginAtZero:false, min:0, max:100, position:'right',
-             ticks:{color:'rgba(206,147,216,.7)',font:{size:11},callback:v=>v+'%'},
+             ticks:{color:cc().purple,font:{size:14},callback:v=>v+'%'},
              grid:{drawOnChartArea:false},
-             title:{display:true,text:'FPY %',color:'rgba(206,147,216,.6)',font:{size:10}} }
+             title:{display:true,text:'FPY %',color:cc().purple,font:{size:12}} }
       }
     }
   });
@@ -2099,8 +2111,8 @@ function renderSLATypeCharts(rows, weeks){
         scales:{
           x:{display:false},
           y:{beginAtZero:false,
-             ticks:{color:'rgba(238,240,244,.35)',font:{size:9},callback:v=>v+'d'},
-             grid:{color:'rgba(255,255,255,.05)'}}
+             ticks:{color:cc().tickFade,font:{size:12},callback:v=>v+'d'},
+             grid:{color:cc().grid}}
         }
       }
     });
@@ -2350,12 +2362,12 @@ function renderTrend(designers,rows){
         x:{
           stacked:true,
           beginAtZero:true,
-          ticks:{color:'rgba(238,240,244,.35)',font:{size:11},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
-          grid:{color:'rgba(255,255,255,.05)'}
+          ticks:{color:cc().tickFade,font:{size:14},stepSize:1,callback:v=>Number.isInteger(v)?v:''},
+          grid:{color:cc().grid}
         },
         y:{
           stacked:true,
-          ticks:{color:'rgba(238,240,244,.75)',font:{size:13}},
+          ticks:{color:cc().tick,font:{size:15}},
           grid:{display:false}
         }
       }
