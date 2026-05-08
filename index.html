@@ -416,6 +416,7 @@ body.light-mode .screen-dot.active { background:#F7941D; border-color:#F7941D; }
           <div class="screen-dot" onclick="goTo(5)" title="Community-level weekly report"></div>
           <div class="screen-dot" onclick="goTo(6)" title="SLA report"></div>
           <div class="screen-dot" onclick="goTo(7)" title="FPY report"></div>
+          <div class="screen-dot" onclick="goTo(8)" title="Productivity equivalency"></div>
         </div>
         <button class="btn-pause" id="pause-btn" onclick="togglePause()">⏸ Pause</button>
         <button class="btn-xs hi" onclick="openIP()" style="border-color:rgba(255,183,77,.4);color:#FFB74D;" id="ip-btn">✎ In Progress</button>
@@ -759,6 +760,45 @@ body.light-mode .screen-dot.active { background:#F7941D; border-color:#F7941D; }
       </div>
     </div>
 
+    <!-- SCREEN 8: Productivity Equivalency -->
+    <div class="screen" id="screen-8">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.7rem;">
+        <div class="section-label" style="color:#80DEEA;margin-bottom:0;">PRODUCTIVITY EQUIVALENCY</div>
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+          <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);">Quarter</span>
+          <div id="peq-q-slicer-0" style="display:flex;gap:.3rem;flex-wrap:wrap;"></div>
+          <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin-left:.4rem;">Range</span>
+          <input type="date" id="sf-from-8" style="font-size:.76rem;padding:.35rem .7rem;border-radius:var(--border-radius-md);border:1px solid var(--border2);background:var(--surface2);color:var(--text);" onchange="screenFilterChange(this.value, document.getElementById('sf-to-8').value)">
+          <span style="font-size:.68rem;color:var(--dim);">to</span>
+          <input type="date" id="sf-to-8" style="font-size:.76rem;padding:.35rem .7rem;border-radius:var(--border-radius-md);border:1px solid var(--border2);background:var(--surface2);color:var(--text);" onchange="screenFilterChange(document.getElementById('sf-from-8').value, this.value)">
+          <button class="btn-xs" onclick="resetScreenFilter()">Last 7 work days</button>
+          <button class="btn-xs hi" onclick="openPEQSettings()" style="border-color:rgba(128,222,234,.4);color:#80DEEA;">✎ Edit weights</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:1rem;flex:1;min-height:0;">
+
+        <!-- LEFT: Designer cards -->
+        <div class="panel" style="display:flex;flex-direction:column;min-height:0;">
+          <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem;">Designer FTE Equivalency</div>
+          <div id="peq-designer-grid" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;min-height:0;"></div>
+        </div>
+
+        <!-- RIGHT: Level summary -->
+        <div style="display:flex;flex-direction:column;gap:.8rem;min-height:0;">
+          <div class="panel">
+            <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem;">By Design Level</div>
+            <div id="peq-level-summary"></div>
+          </div>
+          <div class="panel" style="flex:1;">
+            <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem;">Overall</div>
+            <div id="peq-overall"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div><!-- /screens-wrapper -->
 
 <!-- SLA TARGETS OVERLAY -->
@@ -772,6 +812,27 @@ body.light-mode .screen-dot.active { background:#F7941D; border-color:#F7941D; }
     <div class="ip-actions">
       <button class="ip-cancel" onclick="closeSLATargets()">Cancel</button>
       <button class="ip-save" onclick="saveSLATargets()">Save targets</button>
+    </div>
+  </div>
+</div>
+
+<!-- PEQ SETTINGS OVERLAY -->
+<div class="ip-overlay" id="peq-settings-overlay" onclick="if(event.target===this)closePEQSettings()">
+  <div class="ip-panel" style="max-width:500px;">
+    <div class="ip-panel-header">
+      <div class="ip-panel-title">Productivity <span>Equivalency</span> Weights</div>
+      <button class="ip-close" onclick="closePEQSettings()">✕</button>
+    </div>
+    <div style="font-size:.7rem;color:var(--dim);margin-bottom:1rem;">Hours per unit. Daily productive hours = 6 hrs.</div>
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:.5rem;align-items:center;margin-bottom:.5rem;">
+      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);">Design Type</div>
+      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:center;">Hrs/unit</div>
+      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:center;">Equiv.</div>
+    </div>
+    <div id="peq-weights-grid" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;"></div>
+    <div class="ip-actions">
+      <button class="ip-cancel" onclick="closePEQSettings()">Cancel</button>
+      <button class="ip-save" onclick="savePEQSettings()">Save weights</button>
     </div>
   </div>
 </div>
@@ -855,6 +916,17 @@ const LV_COLOR  = {'Lot-Level Design':'var(--lot)','Community-Level Design':'var
 const LV_COLHEX = {'Lot-Level Design':'#4FC3F7','Community-Level Design':'#69F0AE','Commercial Design':'#FFB74D'};
 const D_COLORS  = ['#7C83FD','#4FC3F7','#69F0AE','#FFB74D','#FF8A65','#CE93D8','#80DEEA','#FFCC02','#F48FB1','#A5D6A7'];
 const ROTATE_MS = 20000;
+const DAILY_HOURS = 6;
+const DEFAULT_PEQ_WEIGHTS = {
+  'Master Plan':                   6,
+  'Master Permit Package':         3,
+  'Future Solar Exhibit':          6,
+  'Individual Plot Plan':          1,
+  'Individual Permit Package':     2,
+  'NH Commercial Design - Maxfit': 6,
+  'Solar Site Plan':               2,
+};
+let peqWeights = {...DEFAULT_PEQ_WEIGHTS};
 /* Token loaded from localStorage — never stored in code */
 const GH_IP_USER  = 'MarkKevinOlivar';
 const GH_IP_REPO  = 'design-andon';
@@ -989,6 +1061,7 @@ function parseDesignCSV(text, firstLoad){
     try{ const saved=localStorage.getItem('andon_ip'); if(saved){ const p=JSON.parse(saved); if(p&&typeof p==='object'&&!Array.isArray(p)) inProgress=p; } }catch(e){}
     try{ const t=localStorage.getItem('andon_sla_targets'); if(t){ const p=JSON.parse(t); if(p&&typeof p==='object'&&p.avg) slaTargets={avg:{...DEFAULT_SLA_TARGETS.avg,...p.avg},p50:{...DEFAULT_SLA_TARGETS.p50,...p.p50},p90:{...DEFAULT_SLA_TARGETS.p90,...p.p90}}; } }catch(e){}
     try{ const n=localStorage.getItem('andon_new_hires'); if(n){ const p=JSON.parse(n); if(Array.isArray(p)) newHires=p; } }catch(e){}
+    try{ const w=localStorage.getItem('andon_peq_weights'); if(w){ const p=JSON.parse(w); if(p&&typeof p==='object') peqWeights={...DEFAULT_PEQ_WEIGHTS,...p}; } }catch(e){}
     document.getElementById('loading-overlay').style.display='none';
     document.getElementById('board').style.display='flex';
     startRotation();
@@ -1044,7 +1117,7 @@ function applyFilters(){
 
 function syncScreenFilters(){
   /* Keep all 4 screen date inputs in sync */
-  [0,1,2,3].forEach(i=>{
+  [0,1,2,3,8].forEach(i=>{
     const f=document.getElementById('sf-from-'+i);
     const t=document.getElementById('sf-to-'+i);
     if(f) f.value=sfFrom;
@@ -1142,7 +1215,7 @@ function resetBar(){
   bar.style.width='0%';
 }
 
-function nextScreen(){goTo((currentScreen+1)%8);}
+function nextScreen(){goTo((currentScreen+1)%9);}
 
 function goTo(i){
   document.querySelectorAll('.screen').forEach((s,si)=>{
@@ -1157,6 +1230,7 @@ function goTo(i){
   if(i===5) renderScreen5();
   if(i===6) renderScreen6();
   if(i===7) renderScreen7();
+  if(i===8) renderScreen8();
 }
 
 function togglePause(){
@@ -1186,6 +1260,7 @@ function renderBoard(){
   renderScreen2(designers,rows);
   if(currentScreen===4) renderScreen4();
   if(currentScreen===5) renderScreen5();
+  if(currentScreen===8) renderScreen8(designers, rows);
   updateTs();
 }
 
@@ -2014,6 +2089,133 @@ function s7SelectMonth(m){
   renderScreen7();
 }
 
+/* ── SCREEN 8 — PRODUCTIVITY EQUIVALENCY ── */
+function getPEQWeight(type){ return peqWeights[type]??DEFAULT_PEQ_WEIGHTS[type]??1; }
+function getEquiv(type){ return parseFloat((getPEQWeight(type)/DAILY_HOURS).toFixed(4)); }
+
+function renderScreen8(designers,rows){
+  if(!designers) designers=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+  if(!rows) rows=filteredRows;
+
+  /* Sync quarter slicer */
+  const qSlicer=document.getElementById('peq-q-slicer-0');
+  if(qSlicer&&!qSlicer.children.length){
+    const availQSet=new Set();
+    rawRows.forEach(r=>{const d=parseDate(colJ(r));if(d&&!isNaN(d))availQSet.add(d.getFullYear()+'-Q'+getQuarter(d));});
+    const availQs=[...availQSet].sort();
+    qSlicer.innerHTML=availQs.map(yq=>`<button class="slicer-btn" data-qtr="${yq}" onclick="applyQuarterFilter('${yq}')">${yq}</button>`).join('');
+    syncScreenQuarterSlicers();
+  }
+
+  /* Per-designer */
+  const designerData=designers.map(d=>{
+    const dRows=rows.filter(r=>colI(r)===d);
+    let totalEquiv=0; const byType={};
+    dRows.forEach(r=>{const type=colG(r);const eq=getEquiv(type);totalEquiv+=eq;byType[type]=(byType[type]||0)+1;});
+    return {name:d,total:dRows.length,equiv:totalEquiv,byType};
+  }).sort((a,b)=>b.equiv-a.equiv);
+
+  const maxEquiv=Math.max(1,...designerData.map(d=>d.equiv));
+
+  document.getElementById('peq-designer-grid').innerHTML=designerData.map((d,i)=>{
+    const pct=Math.round(d.equiv/maxEquiv*100);
+    const isNew=newHires.includes(d.name);
+    const pctScore=Math.round(d.equiv*100);
+    const fteColor=pctScore>=100?'#69F0AE':pctScore>=50?'#FFB74D':'#FF8A65';
+    return `<div style="background:var(--surface2);border-radius:10px;padding:.6rem .9rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span style="font-size:.62rem;color:var(--dim);font-family:'DM Mono',monospace;">${i+1}</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;">${engr(d.name)}</span>
+          ${isNew?`<span class="new-hire-tag" style="font-size:.5rem;padding:1px 5px;">NEW HIRE</span>`:''}
+        </div>
+        <div style="display:flex;align-items:baseline;gap:.3rem;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:${fteColor};">${pctScore}%</span>
+          <span style="font-size:.68rem;color:var(--dim);margin-left:.3rem;">${d.total} units</span>
+        </div>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${fteColor};border-radius:4px;"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.35rem;">
+        ${Object.entries(d.byType).map(([type,count])=>`<span style="font-size:.58rem;color:var(--muted);background:var(--border);border-radius:4px;padding:1px 5px;">${type}: ${count} × ${Math.round(getEquiv(type)*100)}%</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  /* Per-level */
+  const LV_HEX={'Lot-Level Design':'#4FC3F7','Community-Level Design':'#69F0AE','Commercial Design':'#FFB74D'};
+  const levelEquiv={};
+  LEVELS.forEach(l=>levelEquiv[l]={total:0,equiv:0});
+  rows.forEach(r=>{const level=getLevel(colG(r));if(!LEVELS.includes(level))return;levelEquiv[level].total++;levelEquiv[level].equiv+=getEquiv(colG(r));});
+
+  document.getElementById('peq-level-summary').innerHTML=LEVELS.map(l=>{
+    const d=levelEquiv[l]; const hex=LV_HEX[l];
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:.8rem;color:${hex};font-weight:500;">${LV_SHORT[l]}</div>
+      <div style="display:flex;align-items:baseline;gap:.35rem;">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:${hex};">${Math.round(d.equiv*100)}%</span>
+        <span style="font-size:.62rem;color:var(--dim);">${d.total} units</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* Overall */
+  const totalEquiv=Object.values(levelEquiv).reduce((s,v)=>s+v.equiv,0);
+  const totalUnits=rows.length;
+  const avgPerDes=designers.length>0?Math.round(totalEquiv/designers.length*100)+'%':'0%';
+  document.getElementById('peq-overall').innerHTML=`
+    <div style="text-align:center;padding:.4rem 0;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1;color:#80DEEA;">${Math.round(totalEquiv*100)}%</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-bottom:.7rem;">Team productivity</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <div style="background:var(--surface2);border-radius:8px;padding:.5rem;">
+          <div style="font-size:.58rem;color:var(--dim);">Total units</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--text);">${totalUnits}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:.5rem;">
+          <div style="font-size:.58rem;color:var(--dim);">Avg productivity</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--text);">${avgPerDes}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function openPEQSettings(){
+  checkAdminPassword(()=>{
+    const types=Object.keys(DEFAULT_PEQ_WEIGHTS);
+    document.getElementById('peq-weights-grid').innerHTML=types.map(t=>{
+      const hrs=peqWeights[t]||DEFAULT_PEQ_WEIGHTS[t];
+      const eq=(hrs/DAILY_HOURS).toFixed(4);
+      const tid=t.replace(/\W/g,'_');
+      return `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:.5rem;align-items:center;padding:.3rem 0;border-top:1px solid var(--border);">
+        <div style="font-size:.78rem;color:var(--text);">${t}</div>
+        <input type="number" min="0.5" step="0.5" value="${hrs}" id="peq-w-${tid}"
+          style="font-size:.82rem;padding:.3rem .4rem;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);text-align:center;">
+        <div id="peq-eq-${tid}" style="font-size:.78rem;color:#80DEEA;text-align:center;font-family:'DM Mono',monospace;">${Math.round((hrs/DAILY_HOURS)*100)}%</div>
+      </div>`;
+    }).join('');
+    types.forEach(t=>{
+      const tid=t.replace(/\W/g,'_');
+      const inp=document.getElementById('peq-w-'+tid);
+      const eq=document.getElementById('peq-eq-'+tid);
+      if(inp&&eq) inp.addEventListener('input',()=>{eq.textContent=Math.round(((parseFloat(inp.value)||0)/DAILY_HOURS)*100)+'%';});
+    });
+    document.getElementById('peq-settings-overlay').classList.add('open');
+  });
+}
+
+function closePEQSettings(){document.getElementById('peq-settings-overlay').classList.remove('open');}
+
+function savePEQSettings(){
+  Object.keys(DEFAULT_PEQ_WEIGHTS).forEach(t=>{
+    const el=document.getElementById('peq-w-'+t.replace(/\W/g,'_'));
+    if(el) peqWeights[t]=Math.max(0.5,parseFloat(el.value)||1);
+  });
+  try{localStorage.setItem('andon_peq_weights',JSON.stringify(peqWeights));}catch(e){}
+  closePEQSettings();
+  if(currentScreen===8) renderScreen8();
+}
 
 function renderSLATypeCharts(rows, weeks){
   const types=SLA_TYPES;
