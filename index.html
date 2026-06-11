@@ -496,6 +496,10 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
         <span style="font-size:.68rem;color:var(--dim);">to</span>
         <input type="date" id="sf-to-0" style="font-size:.76rem;padding:.35rem .7rem;border-radius:var(--border-radius-md);border:1px solid var(--border2);background:var(--surface2);color:var(--text);" onchange="screenFilterChange(document.getElementById('sf-from-0').value, this.value)">
         <button class="btn-xs" onclick="resetScreenFilter()" class="btn-xs btn-last7">Last 7 work days</button>
+        <button class="slicer-btn" id="ytd-btn-3" onclick="setYTDFilter()">YTD</button>
+        <button class="slicer-btn" id="ytd-btn-2" onclick="setYTDFilter()">YTD</button>
+        <button class="slicer-btn" id="ytd-btn-1" onclick="setYTDFilter()">YTD</button>
+        <button class="slicer-btn" id="ytd-btn-0" onclick="setYTDFilter()">YTD</button>
       </div>
       <div class="section-label" style="color:var(--text);margin-bottom:.8rem;">DESIGN PIPELINE</div>
 
@@ -642,6 +646,7 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
           <input type="date" id="sf-from-8" style="font-size:.76rem;padding:.35rem .7rem;border-radius:var(--border-radius-md);border:1px solid var(--border2);background:var(--surface2);color:var(--text);" onchange="screenFilterChange(this.value, document.getElementById('sf-to-8').value)">
           <span style="font-size:.68rem;color:var(--dim);">to</span>
           <input type="date" id="sf-to-8" style="font-size:.76rem;padding:.35rem .7rem;border-radius:var(--border-radius-md);border:1px solid var(--border2);background:var(--surface2);color:var(--text);" onchange="screenFilterChange(document.getElementById('sf-from-8').value, this.value)">
+          <button class="slicer-btn" id="ytd-btn-4" onclick="setYTDFilter()">YTD</button>
           <button class="btn-xs" onclick="resetScreenFilter()" class="btn-xs btn-last7">Last 7 work days</button>
           <button class="btn-xs hi" onclick="openPEQSettings()" style="border-color:var(--border2);color:var(--text);">✎ Edit weights</button>
         </div>
@@ -697,6 +702,10 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
               <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Month</span>
               <div id="m-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
             </div>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Period</span>
+              <button class="slicer-btn" id="s4-ytd-btn" onclick="s4SelectYTD()">YTD</button>
+            </div>
           </div>
           <div style="position:relative;flex:1;min-height:405px;">
             <canvas id="weeklyChart" role="img" aria-label="Stacked bar chart of lot-level designs by ISO work week"></canvas>
@@ -732,6 +741,10 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
               <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Month</span>
               <div id="cm-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
             </div>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Period</span>
+              <button class="slicer-btn" id="s5-ytd-btn" onclick="s5SelectYTD()">YTD</button>
+            </div>
           </div>
           <div style="position:relative;flex:1;min-height:405px;">
             <canvas id="commWeeklyChart" role="img" aria-label="Stacked bar chart of community-level designs by ISO work week"></canvas>
@@ -754,6 +767,10 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
           <div style="display:flex;align-items:center;gap:.4rem;">
             <span style="font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);">Month</span>
             <div id="sla-m-slicer" style="display:flex;gap:.3rem;flex-wrap:wrap;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.4rem;margin-left:.2rem;">
+            <span style="font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);">Period</span>
+            <button class="slicer-btn" id="s6-ytd-btn" onclick="s6SelectYTD()">YTD</button>
           </div>
         </div>
       </div>
@@ -841,7 +858,7 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
             <div class="panel-header" style="margin-bottom:.6rem;">
               <div style="display:flex;flex-direction:column;gap:3px;">
                 <div class="panel-title" style="font-size:.78rem;letter-spacing:.1em;color:var(--text);opacity:.7;">C4: Community Award to Final Design Approved</div>
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.07em;color:var(--text);opacity:.5;">WW22+</div>
+                <div id="c4-design-quarter-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.07em;color:var(--text);"></div>
               </div>
               <div class="trend-legend">
                 <span class="leg-item"><span class="leg-dot" style="background:#4DD0E1"></span>C4 Design FPY %</span>
@@ -1095,11 +1112,11 @@ let hiddenScreens=new Set(); /* screen indices to hide from rotation */
 let s7SelYear=null, s7SelQ=null, s7SelMonth=null, s7SelYTD=false;
 
 let rawRows=[], filteredRows=[], trendChart=null, weeklyChart=null, commWeeklyChart=null, slaChart=null;
-let s4SelYear=null, s4SelQ=null, s4SelMonth=null;
+let s4SelYear=null, s4SelQ=null, s4SelMonth=null, s4SelYTD=false;
 /* Per-screen date filter state for screens 0-3 (shared — same date range applies) */
 let sfFrom='', sfTo='';
-let s5SelYear=null, s5SelQ=null, s5SelMonth=null;
-let s6SelYear=null, s6SelQ=null, s6SelMonth=null;
+let s5SelYear=null, s5SelQ=null, s5SelMonth=null, s5SelYTD=false;
+let s6SelYear=null, s6SelQ=null, s6SelMonth=null, s6SelYTD=false;
 let currentScreen=0, paused=false, rotateTimer=null, barAnim=null;
 let inProgress = { 'Lot-Level Design':0, 'Community-Level Design':0, 'Commercial Design':0 };
 /* { 'Lot-Level Design': n, 'Community-Level Design': n, 'Commercial Design': n } */
@@ -1766,7 +1783,13 @@ function renderScreen4(){
 
   /* Determine date range for chart */
   let rangeStart, rangeEnd, rangeLabel;
-  if(s4SelMonth!==null){
+  const s4ytdBtn=document.getElementById('s4-ytd-btn');
+  if(s4ytdBtn) s4ytdBtn.classList.toggle('active',s4SelYTD);
+  if(s4SelYTD){
+    rangeStart=new Date(s4SelYear,0,1);
+    rangeEnd  =new Date(s4SelYear,11,31,23,59,59);
+    rangeLabel=`YTD ${s4SelYear}`;
+  } else if(s4SelMonth!==null){
     rangeStart=new Date(s4SelYear, s4SelMonth, 1);
     rangeEnd  =new Date(s4SelYear, s4SelMonth+1, 0, 23, 59, 59);
     rangeLabel=`${MONTH_NAMES[s4SelMonth]} ${s4SelYear}`;
@@ -1790,7 +1813,7 @@ function renderScreen4(){
     const wk=isoWeek(d);
     if(!wm[wk]) wm[wk]={new:0,rework:0};
     const xVal=parseFloat(colX(r));
-    if(!isNaN(xVal)&&xVal>1) wm[wk].rework++;
+    if(!isNaN(xVal)&&xVal>=1) wm[wk].rework++;
     else wm[wk].new++;
   });
   const weeks=Object.keys(wm).sort();
@@ -1884,12 +1907,12 @@ function renderScreen4(){
 function s4SelectQ(year, q){
   s4SelYear=parseInt(year);
   s4SelQ=parseInt(q);
-  s4SelMonth=null; /* reset month when quarter changes */
+  s4SelMonth=null; s4SelYTD=false;
   renderScreen4();
 }
 
 function s4SelectMonth(m){
-  s4SelMonth=(m===null)?null:parseInt(m);
+  s4SelMonth=(m===null)?null:parseInt(m); s4SelYTD=false;
   renderScreen4();
 }
 
@@ -1937,7 +1960,13 @@ function renderScreen5(){
 
   /* Date range */
   let rangeStart, rangeEnd, rangeLabel;
-  if(s5SelMonth!==null){
+  const s5ytdBtn=document.getElementById('s5-ytd-btn');
+  if(s5ytdBtn) s5ytdBtn.classList.toggle('active',s5SelYTD);
+  if(s5SelYTD){
+    rangeStart=new Date(s5SelYear,0,1);
+    rangeEnd  =new Date(s5SelYear,11,31,23,59,59);
+    rangeLabel=`YTD ${s5SelYear}`;
+  } else if(s5SelMonth!==null){
     rangeStart=new Date(s5SelYear,s5SelMonth,1);
     rangeEnd  =new Date(s5SelYear,s5SelMonth+1,0,23,59,59);
     rangeLabel=`${MONTH_NAMES[s5SelMonth]} ${s5SelYear}`;
@@ -1961,7 +1990,7 @@ function renderScreen5(){
     const wk=isoWeek(d);
     if(!wm[wk]) wm[wk]={new:0,rework:0};
     const xVal=parseFloat(colX(r));
-    if(!isNaN(xVal)&&xVal>1) wm[wk].rework++;
+    if(!isNaN(xVal)&&xVal>=1) wm[wk].rework++;
     else wm[wk].new++;
   });
   const weeks=Object.keys(wm).sort();
@@ -2048,11 +2077,11 @@ function renderScreen5(){
 function s5SelectQ(year,q){
   s5SelYear=parseInt(year);
   s5SelQ=parseInt(q);
-  s5SelMonth=null;
+  s5SelMonth=null; s5SelYTD=false;
   renderScreen5();
 }
 
-function s5SelectMonth(m){
+function s5SelectMonth(m){ s5SelYTD=false;
   s5SelMonth=(m===null)?null:parseInt(m);
   renderScreen5();
 }
@@ -2117,7 +2146,13 @@ function renderScreen6(){
 
   /* Date range */
   let rangeStart, rangeEnd, rangeLabel;
-  if(s6SelMonth!==null){
+  const s6ytdBtn=document.getElementById('s6-ytd-btn');
+  if(s6ytdBtn) s6ytdBtn.classList.toggle('active',s6SelYTD);
+  if(s6SelYTD){
+    rangeStart=new Date(s6SelYear,0,1);
+    rangeEnd  =new Date(s6SelYear,11,31,23,59,59);
+    rangeLabel=`YTD ${s6SelYear}`;
+  } else if(s6SelMonth!==null){
     rangeStart=new Date(s6SelYear,s6SelMonth,1);
     rangeEnd  =new Date(s6SelYear,s6SelMonth+1,0,23,59,59);
     rangeLabel=`${MONTH_NAMES[s6SelMonth]} ${s6SelYear}`;
@@ -2581,14 +2616,16 @@ function renderScreen7(){
   });
 
   /* Render the two design-CSV FPY sub-charts */
-  renderC4DesignFpyChart(rangeStart, rangeEnd);
+  renderC4DesignFpyChart(rangeStart, rangeEnd, rangeLabel);
   renderC4FpyChart(rangeStart, rangeEnd, rangeLabel);
   renderL7FpyChart(rangeStart, rangeEnd, rangeLabel);
 }
 
-function renderC4DesignFpyChart(rangeStart, rangeEnd){
+function renderC4DesignFpyChart(rangeStart, rangeEnd, rangeLabel){
   const canvas=document.getElementById('c4DesignFpyChart');
   if(!canvas) return;
+  const c4ql=document.getElementById('c4-design-quarter-label');
+  if(c4ql) c4ql.textContent=rangeLabel||'';
 
   // Community design completions per week (denominator)
   const c4CommCnt={};
@@ -2710,6 +2747,34 @@ function s7SelectMonth(m){
   s7SelMonth=(m===null)?null:parseInt(m);
   s7SelYTD=false;
   renderScreen7();
+}
+
+function setYTDFilter(){
+  const y=new Date().getFullYear();
+  const from=`${y}-01-01`, to=`${y}-12-31`;
+  // Update all date inputs
+  ['0','1','2','3','8'].forEach(n=>{
+    const f=document.getElementById('sf-from-'+n);
+    const t=document.getElementById('sf-to-'+n);
+    if(f) f.value=from;
+    if(t) t.value=to;
+  });
+  screenFilterChange(from,to);
+}
+function s4SelectYTD(){
+  s4SelYTD=!s4SelYTD;
+  if(s4SelYTD){ s4SelMonth=null; }
+  renderScreen4();
+}
+function s5SelectYTD(){
+  s5SelYTD=!s5SelYTD;
+  if(s5SelYTD){ s5SelMonth=null; }
+  renderScreen5();
+}
+function s6SelectYTD(){
+  s6SelYTD=!s6SelYTD;
+  if(s6SelYTD){ s6SelMonth=null; }
+  renderScreen6();
 }
 function s7SelectYTD(){
   s7SelYTD=true;
