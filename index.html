@@ -2550,7 +2550,7 @@ function renderScreen7(){
         // Place box to the right of the line (or left if near right edge)
         const chartRight=chart.chartArea.right;
         const bx=x+bw+8<=chartRight ? x+6 : x-bw-6;
-        const by=top+6;
+        const by=top+(bot-top)/2-bh/2;
 
         ctx.fillStyle=lm?'rgba(255,240,240,0.95)':'rgba(40,20,20,0.92)';
         ctx.strokeStyle='rgba(220,50,50,0.7)';
@@ -2596,6 +2596,23 @@ function renderC4DesignFpyChart(rangeStart, rangeEnd){
   const c4ElecFail={}; // week → electrical fail count
   const c4StrucFail={}; // week → structural fail count
 
+  // ≤WW21: legacy community rows from old design.csv
+  // QA score = colAF (idx 31), elec fail = col R (idx 17) not blank,
+  // struc fail = col V (idx 21) not blank
+  rawRows.forEach(r=>{
+    if(getLevel(colG(r))!=='Community-Level Design') return;
+    const d=parseDate(colJ(r));
+    if(!d||isNaN(d)||d>WW22_CUTOFF||d<rangeStart||d>rangeEnd) return;
+    const wk=isoWeek(d);
+    c4CommCnt[wk]=(c4CommCnt[wk]||0)+1;
+    if(!c4QA[wk]) c4QA[wk]=[];
+    const score=parseFloat(col(r,31)); // colAF = QA score %
+    if(!isNaN(score)) c4QA[wk].push(score);
+    if(col(r,17)!=='') c4ElecFail[wk]=(c4ElecFail[wk]||0)+1; // col R not blank = elec fail
+    if(col(r,21)!=='') c4StrucFail[wk]=(c4StrucFail[wk]||0)+1; // col V not blank = struc fail
+  });
+
+  // WW22+: new community design rows
   rawRows.forEach(r=>{
     if(getLevel(colG(r))!=='Community-Level Design') return;
     const d=parseDate(colJ(r));
@@ -2607,7 +2624,7 @@ function renderC4DesignFpyChart(rangeStart, rangeEnd){
     if(!isNaN(score)) c4QA[wk].push(score);
   });
 
-  // Community electrical fails (col H=7 = date, col I=8 = pass/fail)
+  // WW22+ community electrical fails (col H=7 = date, col I=8 = pass/fail)
   commElecRaws.forEach(r=>{
     const d=parseDate(col(r,7));
     if(!d||isNaN(d)||d<=WW22_CUTOFF||d<rangeStart||d>rangeEnd) return;
@@ -2615,7 +2632,7 @@ function renderC4DesignFpyChart(rangeStart, rangeEnd){
     if(col(r,8).toLowerCase()!=='pass') c4ElecFail[wk]=(c4ElecFail[wk]||0)+1;
   });
 
-  // Community structural fails (same structure)
+  // WW22+ community structural fails (same structure)
   commStrucRaws.forEach(r=>{
     const d=parseDate(col(r,7));
     if(!d||isNaN(d)||d<=WW22_CUTOFF||d<rangeStart||d>rangeEnd) return;
