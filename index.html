@@ -1958,6 +1958,19 @@ function renderScreen0(designers,rows){
     return {...m, volNorm, score};
   }).sort((a,b)=>(b.score??-1)-(a.score??-1));
 
+  if(!scored.length){
+    const sampleI=filteredRows.slice(0,3).map(r=>JSON.stringify(col(r,8))).join(', ');
+    const sampleJ=filteredRows.slice(0,3).map(r=>JSON.stringify(col(r,9))).join(', ');
+    document.getElementById('designer-grid').innerHTML=`<div style="color:var(--muted);padding:2rem;font-size:.8rem;">
+      No designer cards.<br>
+      filteredRows: ${filteredRows.length} | rawRows: ${rawRows.length}<br>
+      sfFrom: ${sfFrom} | sfTo: ${sfTo}<br>
+      designers passed in: ${designers.length}<br>
+      sample colI(rows[0..2]): ${sampleI}<br>
+      sample colJ(rows[0..2]): ${sampleJ}
+    </div>`;
+    return;
+  }
   document.getElementById('designer-grid').innerHTML=scored.map(({d,dR,q,otd,fpy,sla,attendance,volNorm,score},rank)=>{
     const dTotal=dR.length;
     const lv={};
