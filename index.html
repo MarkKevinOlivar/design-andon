@@ -4082,6 +4082,300 @@ async function buildAndDownloadMemo(d){
   setTimeout(()=>URL.revokeObjectURL(url),5000);
   showMemoToast('✅ '+d.fileNum+'.docx downloaded!');
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER SCREEN 1 — Totals, In Progress, OTD  (screen-0 div)
+   ═══════════════════════════════════════════════════════════ */
+function renderScreen1(designers, rows){
+  function set(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+  function setColor(id, color){ const el=document.getElementById(id); if(el) el.style.color=color; }
+
+  /* Completed counts */
+  const total=rows.length;
+  const byLevel={};
+  LEVELS.forEach(l=>{ byLevel[l]=rows.filter(r=>getLevel(colG(r))===l).length; });
+
+  set('s3-t-all', total);
+  set('s3-t-all-sub', total===1?'1 design total':total+' designs total');
+  set('s3-t-lot', byLevel['Lot-Level Design']||0);
+  set('s3-t-lot-sub', 'lot-level');
+  set('s3-t-comm', byLevel['Community-Level Design']||0);
+  set('s3-t-comm-sub', 'community-level');
+  set('s3-t-coml', byLevel['Commercial Design']||0);
+  set('s3-t-coml-sub', 'commercial');
+
+  /* Avg quality */
+  const q=avgQual(rows);
+  if(q!==null){
+    set('s3-t-qual', Math.round(q)+'%');
+    setColor('s3-t-qual', qColor(q));
+  } else { set('s3-t-qual','—'); }
+
+  /* In Progress */
+  const ipTotal=LEVELS.reduce((s,l)=>s+(inProgress[l]||0),0);
+  set('s3-ip-all', ipTotal);
+  set('s3-ip-lot', inProgress['Lot-Level Design']||0);
+  set('s3-ip-comm', inProgress['Community-Level Design']||0);
+  set('s3-ip-coml', inProgress['Commercial Design']||0);
+  /* Timestamp from localStorage */
+  try{
+    const saved=localStorage.getItem('andon_ip_ts');
+    set('s3-ip-ts', saved||'—');
+  }catch(e){ set('s3-ip-ts','—'); }
+
+  /* OTD — overall */
+  const otdAll=calcOTD(rows);
+  if(otdAll.total>0){
+    set('s3-otd-pct', otdAll.pct+'%');
+    set('s3-otd-sub', otdAll.pass+' pass / '+otdAll.fail+' fail');
+    setColor('s3-otd-pct', otdAll.pct>=90?'var(--pass)':otdAll.pct>=70?'#FFB74D':'var(--fail)');
+  } else { set('s3-otd-pct','—'); set('s3-otd-sub','no due dates'); }
+
+  /* OTD — by level */
+  LEVELS.forEach(lv=>{
+    const key = lv==='Lot-Level Design'?'lot':lv==='Community-Level Design'?'comm':'coml';
+    const lvRows=rows.filter(r=>getLevel(colG(r))===lv);
+    const otd=calcOTD(lvRows);
+    if(otd.total>0){
+      set('s3-otd-'+key, otd.pct+'%');
+      set('s3-otd-'+key+'-sub', otd.pass+'P / '+otd.fail+'F');
+      setColor('s3-otd-'+key, otd.pct>=90?'var(--pass)':otd.pct>=70?'#FFB74D':'var(--fail)');
+    } else { set('s3-otd-'+key,'—'); }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER SCREEN 2 — Level group cards  (screen-2 div)
+   ═══════════════════════════════════════════════════════════ */
+function renderScreen2(designers, rows){
+  const grid=document.getElementById('level-group-grid');
+  if(!grid) return;
+
+  grid.innerHTML=LEVELS.map(lv=>{
+    const lvRows=rows.filter(r=>getLevel(colG(r))===lv);
+    const lvDesigners=designers.filter(d=>rows.some(r=>colI(r)===d&&getLevel(colG(r))===lv));
+    const color=LV_COLOR[lv]||'var(--text)';
+    const total=lvRows.length;
+    const q=avgQual(lvRows);
+    const otd=calcOTD(lvRows);
+
+    const designerRows=lvDesigners.map(d=>{
+      const dR=lvRows.filter(r=>colI(r)===d);
+      const dq=avgQual(dR);
+      const dotd=calcOTD(dR);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:.75rem;color:var(--text);font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;">${engr(d)}</div>
+        <div style="display:flex;gap:1rem;align-items:baseline;">
+          <span style="font-size:.65rem;color:var(--muted);">${dR.length} designs</span>
+          ${dq!==null?`<span style="font-size:.65rem;color:${qColor(dq)};">${Math.round(dq)}% QA</span>`:''}
+          ${dotd.total>0?`<span style="font-size:.65rem;color:${dotd.pct>=90?'var(--pass)':dotd.pct>=70?'#FFB74D':'var(--fail)'};">${dotd.pct}% OTD</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="level-group-card">
+      <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;color:${color};">${lv}</div>
+        <div style="display:flex;gap:1.5rem;margin-top:.4rem;">
+          <span style="font-size:.65rem;color:var(--muted);">${total} completed</span>
+          ${q!==null?`<span style="font-size:.65rem;color:${qColor(q)};">${Math.round(q)}% avg QA</span>`:''}
+          ${otd.total>0?`<span style="font-size:.65rem;color:${otd.pct>=90?'var(--pass)':otd.pct>=70?'#FFB74D':'var(--fail)'};">${otd.pct}% OTD</span>`:''}
+        </div>
+      </div>
+      <div style="padding:.8rem 1.2rem;max-height:320px;overflow-y:auto;">
+        ${lvDesigners.length?designerRows:`<div style="font-size:.72rem;color:var(--dim);padding:.5rem 0;">No designers in this period.</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FETCH IP FROM GITHUB
+   ═══════════════════════════════════════════════════════════ */
+function fetchIPFromGitHub(){
+  const token=getGHToken();
+  const url=`https://api.github.com/repos/${GH_IP_USER}/${GH_IP_REPO}/contents/${GH_IP_FILE}`;
+  const rawUrl=`https://raw.githubusercontent.com/${GH_IP_USER}/${GH_IP_REPO}/main/${GH_IP_FILE}`;
+  const headers=token?{Authorization:'token '+token,Accept:'application/vnd.github.v3.raw'}:{Accept:'application/vnd.github.v3.raw'};
+  fetch(token?url:rawUrl,{cache:'no-cache',headers})
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data=>{
+      /* GitHub API returns base64 content; raw URL returns plain JSON */
+      let parsed=data;
+      if(data&&data.content){ try{ parsed=JSON.parse(atob(data.content.replace(/\n/g,''))); }catch(e){ return; } }
+      if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed)){
+        LEVELS.forEach(lv=>{ if(typeof parsed[lv]==='number') inProgress[lv]=parsed[lv]; });
+        /* Save timestamp */
+        try{ localStorage.setItem('andon_ip_ts', new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})); }catch(e){}
+        try{ localStorage.setItem('andon_ip',JSON.stringify(inProgress)); }catch(e){}
+        const designers=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+        renderScreen1(designers,filteredRows);
+      }
+    })
+    .catch(()=>{}); /* silent fail — IP stays at last known value */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UPDATE SCREEN DOTS (show/hide based on hiddenScreens)
+   ═══════════════════════════════════════════════════════════ */
+function updateScreenDots(){
+  document.querySelectorAll('.screen-dot').forEach((dot,i)=>{
+    dot.style.display=hiddenScreens.has(i)?'none':'';
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   MISSING UI FUNCTIONS  (overlay handlers + theme)
+   ═══════════════════════════════════════════════════ */
+
+/* ── THEME ── */
+function toggleTheme(){
+  document.body.classList.toggle('light-mode');
+  try{ localStorage.setItem('andon_theme', document.body.classList.contains('light-mode')?'light':'dark'); }catch(e){}
+  /* re-render active charts */
+  const designers=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+  if(currentScreen===0||currentScreen===1) renderScreen0(designers,filteredRows);
+}
+
+/* ── OVERLAY BACKDROP CLICK ── */
+function overlayClick(e){
+  if(e.target===e.currentTarget) closeIP();
+}
+
+/* ── IN PROGRESS OVERLAY ── */
+function openIP(){
+  const grid=document.getElementById('ip-grid');
+  grid.innerHTML=LEVELS.map(lv=>`
+    <div style="display:grid;grid-template-columns:1fr 90px;align-items:center;gap:.6rem;padding:.4rem 0;border-bottom:1px solid var(--border);">
+      <label style="font-size:.78rem;color:var(--text);">${lv}</label>
+      <input type="number" id="ip-${lv.replace(/\s+/g,'-')}" min="0" value="${inProgress[lv]||0}"
+        style="text-align:center;padding:.3rem;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:.82rem;width:100%;">
+    </div>`).join('');
+  document.getElementById('ip-overlay').classList.add('open');
+}
+function closeIP(){ document.getElementById('ip-overlay').classList.remove('open'); }
+function saveIP(){
+  LEVELS.forEach(lv=>{
+    const el=document.getElementById('ip-'+lv.replace(/\s+/g,'-'));
+    if(el) inProgress[lv]=parseInt(el.value)||0;
+  });
+  try{ localStorage.setItem('andon_ip',JSON.stringify(inProgress)); }catch(e){}
+  closeIP();
+  const designers=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+  if(typeof renderScreen0==='function') renderScreen0(designers,filteredRows);
+}
+
+/* ── SETTINGS OVERLAY ── */
+const SCREEN_TITLES=['Totals & In Progress','Designer Scorecard','Level Groups','Trend & Ranking','Productivity Equiv.','Team Reports','SLA Report','FPY Report','Design Pass Rate'];
+function openSettings(){
+  /* Screen visibility checkboxes */
+  const vis=document.getElementById('settings-screen-visibility');
+  if(vis) vis.innerHTML=SCREEN_TITLES.map((t,i)=>`
+    <label style="display:flex;align-items:center;gap:.6rem;font-size:.76rem;color:var(--text);cursor:pointer;">
+      <input type="checkbox" id="sv-${i}" ${hiddenScreens.has(i)?'':'checked'}
+        style="width:14px;height:14px;accent-color:var(--accent);">
+      <span>${i}: ${t}</span>
+    </label>`).join('');
+  /* GH token */
+  const ghEl=document.getElementById('settings-gh-token');
+  if(ghEl) ghEl.value=getGHToken();
+  /* Clear password field */
+  const pwEl=document.getElementById('settings-password');
+  if(pwEl) pwEl.value='';
+  const statusEl=document.getElementById('settings-token-status');
+  if(statusEl) statusEl.textContent=getGHToken()?'Token saved (●)':'No token saved';
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settings-overlay').classList.remove('open'); }
+function saveSettings(){
+  /* Screen visibility */
+  const newHidden=new Set();
+  SCREEN_TITLES.forEach((_,i)=>{
+    const cb=document.getElementById('sv-'+i);
+    if(cb&&!cb.checked) newHidden.add(i);
+  });
+  hiddenScreens=newHidden;
+  try{ localStorage.setItem('andon_hidden_screens',JSON.stringify([...hiddenScreens])); }catch(e){}
+  /* GH token */
+  const ghEl=document.getElementById('settings-gh-token');
+  if(ghEl&&ghEl.value.trim()){
+    try{ localStorage.setItem('andon_gh_token',ghEl.value.trim()); }catch(e){}
+  }
+  /* Admin password */
+  const pwEl=document.getElementById('settings-password');
+  if(pwEl&&pwEl.value.trim()){
+    try{ localStorage.setItem('andon_admin_pw',btoa(pwEl.value.trim())); }catch(e){}
+  }
+  closeSettings();
+}
+
+/* ── NEW HIRES OVERLAY ── */
+function openNewHires(){
+  const grid=document.getElementById('nh-grid');
+  const designers=[...new Set(rawRows.map(r=>colI(r)).filter(Boolean))].sort();
+  grid.innerHTML=designers.map(d=>`
+    <label style="display:flex;align-items:center;gap:.6rem;font-size:.78rem;color:var(--text);cursor:pointer;padding:.2rem 0;">
+      <input type="checkbox" id="nh-${CSS.escape(d)}" ${newHires.includes(d)?'checked':''}
+        style="width:14px;height:14px;accent-color:var(--accent);">
+      <span>${engr(d)}</span>
+    </label>`).join('');
+  document.getElementById('nh-overlay').classList.add('open');
+}
+function closeNewHires(){ document.getElementById('nh-overlay').classList.remove('open'); }
+function saveNewHires(){
+  const designers=[...new Set(rawRows.map(r=>colI(r)).filter(Boolean))].sort();
+  newHires=designers.filter(d=>{
+    const el=document.getElementById('nh-'+CSS.escape(d));
+    return el&&el.checked;
+  });
+  try{ localStorage.setItem('andon_new_hires',JSON.stringify(newHires)); }catch(e){}
+  closeNewHires();
+  const designers2=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+  renderScreen0(designers2,filteredRows);
+}
+
+/* ── SLA TARGETS OVERLAY ── */
+const SLA_METRIC_LABELS={'avg':'Average','p50':'P50 Median','p90':'P90'};
+function openSLATargets(){
+  const grid=document.getElementById('sla-targets-grid');
+  grid.innerHTML=SLA_TYPES.map(t=>`
+    <div style="display:grid;grid-template-columns:1fr 70px 70px 70px;align-items:center;gap:.5rem;">
+      <div style="font-size:.72rem;color:var(--text);">${t}</div>
+      ${['avg','p50','p90'].map(m=>`
+        <div style="display:flex;flex-direction:column;gap:.15rem;align-items:center;">
+          <div style="font-size:.52rem;color:var(--muted);text-transform:uppercase;">${m}</div>
+          <input type="number" id="sla-${m}-${CSS.escape(t)}" min="0.5" step="0.5"
+            value="${slaTargets[m][t]??DEFAULT_SLA_TARGETS[m][t]??3}"
+            style="width:100%;text-align:center;padding:.25rem;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:.78rem;">
+        </div>`).join('')}
+    </div>`).join('');
+  document.getElementById('sla-targets-overlay').classList.add('open');
+}
+function closeSLATargets(){ document.getElementById('sla-targets-overlay').classList.remove('open'); }
+function saveSLATargets(){
+  ['avg','p50','p90'].forEach(m=>{
+    SLA_TYPES.forEach(t=>{
+      const el=document.getElementById('sla-'+m+'-'+CSS.escape(t));
+      if(el){ const v=parseFloat(el.value); if(!isNaN(v)) slaTargets[m][t]=v; }
+    });
+  });
+  try{ localStorage.setItem('andon_sla_targets',JSON.stringify(slaTargets)); }catch(e){}
+  closeSLATargets();
+  renderScreen6();
+}
+
+/* ── PEQ VIEW SWITCHER ── */
+function setPEQView(v){
+  peqView=v;
+  const designers=[...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort();
+  renderScreen8(designers,filteredRows);
+}
+
+/* ── SLA METRIC SWITCHER ── */
+function setSLAMetric(m){
+  slaTypeMetric=m;
+  renderScreen6();
+}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
