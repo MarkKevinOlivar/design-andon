@@ -1090,6 +1090,7 @@ const TYPE_TO_LEVEL = {
   'Future Solar Exhibit':          'Community-Level Design',
   'NH Commercial Design - Maxfit':    'Commercial Design',
   'NH Commercial Project - Estimate': 'Commercial Design',
+  'Tier 0 Helioscope':                'Commercial Design',
   'PVbid Project Estimate':           'Commercial Design',
   'Solar Site Plan':               'Community-Level Design'
 };
@@ -1109,6 +1110,7 @@ const DEFAULT_PEQ_WEIGHTS = {
   'Individual Permit Package':     2,
   'NH Commercial Design - Maxfit':    6,
   'NH Commercial Project - Estimate': 6,
+  'Tier 0 Helioscope':                6,
   'PVbid Project Estimate':           6,
   'Solar Site Plan':               2,
 };
@@ -1124,11 +1126,11 @@ const DEFAULT_NEW_HIRES = [
   'Alzech Ruzner Dela Cuesta'
 ];
 let newHires = [...DEFAULT_NEW_HIRES]; /* mutable — editable via UI */
-const SLA_TYPES = ['Master Plan','Individual Plot Plan','Individual Permit Package','NH Commercial Design - Maxfit','NH Commercial Project - Estimate','PVbid Project Estimate','Master Permit Package','Future Solar Exhibit','Solar Site Plan'];
+const SLA_TYPES = ['Master Plan','Individual Plot Plan','Individual Permit Package','NH Commercial Design - Maxfit','NH Commercial Project - Estimate','Tier 0 Helioscope','PVbid Project Estimate','Master Permit Package','Future Solar Exhibit','Solar Site Plan'];
 const DEFAULT_SLA_TARGETS = {
-  avg: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
-  p50: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
-  p90: { 'Master Plan':5,'Individual Plot Plan':4,'Individual Permit Package':4,'NH Commercial Design - Maxfit':5,'NH Commercial Project - Estimate':5,'PVbid Project Estimate':5,'Master Permit Package':5,'Future Solar Exhibit':5,'Solar Site Plan':5 },
+  avg: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'Tier 0 Helioscope':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
+  p50: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'Tier 0 Helioscope':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
+  p90: { 'Master Plan':5,'Individual Plot Plan':4,'Individual Permit Package':4,'NH Commercial Design - Maxfit':5,'NH Commercial Project - Estimate':5,'Tier 0 Helioscope':5,'PVbid Project Estimate':5,'Master Permit Package':5,'Future Solar Exhibit':5,'Solar Site Plan':5 },
 };
 let slaTargets = {
   avg: {...DEFAULT_SLA_TARGETS.avg},
