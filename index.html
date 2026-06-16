@@ -463,11 +463,10 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
           <div class="screen-dot" onclick="goTo(2)" title="Level groups"></div>
           <div class="screen-dot" onclick="goTo(3)" title="Trend & ranking"></div>
           <div class="screen-dot" onclick="goTo(4)" title="Productivity equivalency"></div>
-          <div class="screen-dot" onclick="goTo(5)" title="Lot-level weekly report"></div>
-          <div class="screen-dot" onclick="goTo(6)" title="Community-level weekly report"></div>
-          <div class="screen-dot" onclick="goTo(7)" title="SLA report"></div>
-          <div class="screen-dot" onclick="goTo(8)" title="FPY report"></div>
-          <div class="screen-dot" onclick="goTo(9)" title="Design Pass Rate"></div>
+          <div class="screen-dot" onclick="goTo(5)" title="Team reports"></div>
+          <div class="screen-dot" onclick="goTo(6)" title="SLA report"></div>
+          <div class="screen-dot" onclick="goTo(7)" title="FPY report"></div>
+          <div class="screen-dot" onclick="goTo(8)" title="Design Pass Rate"></div>
         </div>
         <button class="btn-pause" id="pause-btn" onclick="togglePause()">⏸ Pause</button>
         <button class="btn-xs hi" onclick="openIP()" style="border-color:var(--border2);color:var(--text);" id="ip-btn">✎ In Progress</button>
@@ -703,80 +702,57 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
 
     </div>
 
-<!-- SCREEN 4: Lot-Level Weekly Report -->
-    <div class="screen" id="screen-5">
-      <div class="section-label" style="color:var(--lot);margin-bottom:.8rem;">LOT-LEVEL TEAM REPORT</div>
-      <div class="bottom-panels" style="grid-template-columns:1fr;min-height:0;">
-        <div class="panel">
-          <div class="panel-header">
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div class="panel-title" style="font-size:.78rem;letter-spacing:.1em;color:var(--text);opacity:.7;">Lot-level completed designs — new vs rework by week</div>
-              <div id="weekly-quarter-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.07em;color:var(--lot)"></div>
-            </div>
-            <div class="trend-legend">
-              <span class="leg-item"><span class="leg-dot" style="background:#4FC3F7"></span>New design</span>
-              <span class="leg-item"><span class="leg-dot" style="background:#FFB74D"></span>Design rework</span>
-              <span class="leg-item"><span class="leg-dot" style="background:#CE93D8;border-radius:50%;width:8px;height:8px;"></span>Rework rate %</span>
-            </div>
+<!-- SCREEN 5: Combined Team Reports (Lot · Community · Commercial) -->
+    <div class="screen" id="screen-5" style="display:flex;flex-direction:column;">
+      <!-- Title + shared slicers -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem;">
+        <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+          <div class="section-label" style="color:var(--text);margin-bottom:0;">TEAM REPORTS</div>
+          <div id="tr-range-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.06em;color:var(--muted)"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:.35rem;">
+            <span style="font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);">Qtr</span>
+            <div id="tr-q-slicer" style="display:flex;gap:.3rem;flex-wrap:wrap;"></div>
           </div>
-          <!-- Slicers -->
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Quarter</span>
-              <div id="q-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Month</span>
-              <div id="m-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Period</span>
-              <button class="slicer-btn" id="s4-ytd-btn" onclick="s4SelectYTD()">YTD</button>
-            </div>
+          <div style="display:flex;align-items:center;gap:.35rem;">
+            <span style="font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);">Month</span>
+            <div id="tr-m-slicer" style="display:flex;gap:.3rem;flex-wrap:wrap;"></div>
           </div>
-          <div style="position:relative;flex:1;min-height:405px;">
-            <canvas id="weeklyChart" role="img" aria-label="Stacked bar chart of lot-level designs by ISO work week"></canvas>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:1.2rem;" id="weekly-summary"></div>
+          <button class="slicer-btn" id="tr-ytd-btn" onclick="trSelectYTD()">YTD</button>
         </div>
       </div>
-    </div>
-
-    <!-- SCREEN 5: Community-Level Weekly Report -->
-    <div class="screen" id="screen-6">
-      <div class="section-label" style="color:var(--community);margin-bottom:.8rem;">COMMUNITY-LEVEL TEAM REPORT</div>
-      <div class="bottom-panels" style="grid-template-columns:1fr;min-height:0;">
-        <div class="panel">
-          <div class="panel-header">
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div class="panel-title" style="font-size:.78rem;letter-spacing:.1em;color:var(--text);opacity:.7;">Community-level completed designs — new vs rework by week</div>
-              <div id="comm-quarter-label" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.07em;color:var(--community)"></div>
-            </div>
-            <div class="trend-legend">
-              <span class="leg-item"><span class="leg-dot" style="background:#4FC3F7"></span>New design</span>
-              <span class="leg-item"><span class="leg-dot" style="background:#FFB74D"></span>Design rework</span>
-              <span class="leg-item"><span class="leg-dot" style="background:#CE93D8"></span>Rework rate %</span>
-            </div>
+      <!-- Legend (shared) -->
+      <div class="trend-legend" style="margin-bottom:.6rem;">
+        <span class="leg-item"><span class="leg-dot" style="background:#4FC3F7"></span>New design</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#FFB74D"></span>Design rework</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#CE93D8;border-radius:50%;width:8px;height:8px;"></span>Rework rate %</span>
+      </div>
+      <!-- 3 panels -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;flex:1;min-height:0;">
+        <!-- Lot-Level -->
+        <div class="panel" style="display:flex;flex-direction:column;">
+          <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lot);font-weight:700;margin-bottom:.4rem;">Lot-Level</div>
+          <div style="position:relative;flex:1;min-height:230px;">
+            <canvas id="trLotChart" role="img" aria-label="Lot-level weekly chart"></canvas>
           </div>
-          <!-- Slicers -->
-          <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Quarter</span>
-              <div id="cq-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Month</span>
-              <div id="cm-slicer" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span style="font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);min-width:52px;">Period</span>
-              <button class="slicer-btn" id="s5-ytd-btn" onclick="s5SelectYTD()">YTD</button>
-            </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:.7rem;" id="tr-lot-summary"></div>
+        </div>
+        <!-- Community-Level -->
+        <div class="panel" style="display:flex;flex-direction:column;">
+          <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--community);font-weight:700;margin-bottom:.4rem;">Community-Level</div>
+          <div style="position:relative;flex:1;min-height:230px;">
+            <canvas id="trCommChart" role="img" aria-label="Community-level weekly chart"></canvas>
           </div>
-          <div style="position:relative;flex:1;min-height:405px;">
-            <canvas id="commWeeklyChart" role="img" aria-label="Stacked bar chart of community-level designs by ISO work week"></canvas>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:.7rem;" id="tr-comm-summary"></div>
+        </div>
+        <!-- Commercial -->
+        <div class="panel" style="display:flex;flex-direction:column;">
+          <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--commercial);font-weight:700;margin-bottom:.4rem;">Commercial</div>
+          <div style="position:relative;flex:1;min-height:230px;">
+            <canvas id="trComlChart" role="img" aria-label="Commercial weekly chart"></canvas>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:1.2rem;" id="comm-weekly-summary"></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:.7rem;" id="tr-coml-summary"></div>
         </div>
       </div>
     </div>
@@ -1146,6 +1122,9 @@ let s7SelYear=null, s7SelQ=null, s7SelMonth=null, s7SelYTD=false;
 
 let rawRows=[], filteredRows=[], trendChart=null, weeklyChart=null, commWeeklyChart=null, slaChart=null;
 let s4SelYear=null, s4SelQ=null, s4SelMonth=null, s4SelYTD=false;
+/* ── COMBINED TEAM REPORTS (screen 5) ── */
+let trLotChart=null, trCommChart=null, trComlChart=null;
+let trSelYear=null, trSelQ=null, trSelMonth=null, trSelYTD=false;
 /* Per-screen date filter state for screens 0-3 (shared — same date range applies) */
 let sfFrom='', sfTo='';
 let s5SelYear=null, s5SelQ=null, s5SelMonth=null, s5SelYTD=false;
@@ -1676,9 +1655,9 @@ function resetBar(){
 }
 
 function nextScreen(){
-  let next=(currentScreen+1)%10;
+  let next=(currentScreen+1)%9;
   let tries=0;
-  while(hiddenScreens.has(next)&&tries<10){ next=(next+1)%10; tries++; }
+  while(hiddenScreens.has(next)&&tries<9){ next=(next+1)%9; tries++; }
   goTo(next);
 }
 
@@ -1693,11 +1672,10 @@ function goTo(i){
   currentScreen=i;
   if(i===3) renderTrend([...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort(), filteredRows);
   if(i===4) renderScreen8([...new Set(filteredRows.map(r=>colI(r)).filter(Boolean))].sort(), filteredRows);
-  if(i===5) renderScreen4();
-  if(i===6) renderScreen5();
-  if(i===7) renderScreen6();
+  if(i===5) renderTeamReports();
+  if(i===6) renderScreen6();
+  if(i===7) renderScreen7();
   if(i===8) renderScreen7();
-  if(i===9) renderScreen7();
 }
 
 function togglePause(){
@@ -1726,8 +1704,7 @@ function renderBoard(){
   renderScreen1(designers,rows);
   renderScreen2(designers,rows);
   if(currentScreen===4) renderScreen8(designers, rows);
-  if(currentScreen===5) renderScreen4();
-  if(currentScreen===6) renderScreen5();
+  if(currentScreen===5) renderTeamReports();
   updateTs();
 }
 
@@ -2237,6 +2214,187 @@ function s5SelectQ(year,q){
 function s5SelectMonth(m){ s5SelYTD=false;
   s5SelMonth=(m===null)?null:parseInt(m);
   renderScreen5();
+}
+
+/* ── SCREEN 5 — COMBINED TEAM REPORTS ── */
+/**
+ * Shared helper: build a week→{new,rework} map for a given set of rows,
+ * then render a stacked-bar + rework-rate chart onto canvasId,
+ * summary tiles into summaryId, and return the Chart instance.
+ */
+function renderTeamChart(canvasId, summaryId, levelRows, accentColor, existingChart, levelLabel){
+  if(existingChart){ existingChart.destroy(); }
+  const wm={};
+  levelRows.forEach(r=>{
+    const d=parseDate(colJ(r)); if(!d) return;
+    const wk=isoWeek(d);
+    if(!wm[wk]) wm[wk]={new:0,rework:0};
+    const xv=parseFloat(colX(r));
+    if(!isNaN(xv)&&xv>1) wm[wk].rework++; else wm[wk].new++;
+  });
+  const weeks=Object.keys(wm).sort();
+  const totalNew   =Object.values(wm).reduce((s,v)=>s+v.new,0);
+  const totalRework=Object.values(wm).reduce((s,v)=>s+v.rework,0);
+  const total      =totalNew+totalRework;
+  const reworkPct  =total>0?Math.round(totalRework/total*100):0;
+  const rateData   =weeks.map(w=>{ const t=wm[w].new+wm[w].rework; return t>0?Math.round(wm[w].rework/t*100):0; });
+
+  /* Summary tiles */
+  const el=document.getElementById(summaryId);
+  if(el) el.innerHTML=`
+    <div style="background:var(--surface2);padding:.6rem .9rem;">
+      <div style="font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Total</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:${accentColor}">${total}</div>
+      <div style="font-size:.6rem;color:var(--muted)">${weeks.length} wk${weeks.length!==1?'s':''}</div>
+    </div>
+    <div style="background:var(--surface2);padding:.6rem .9rem;">
+      <div style="font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">New</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:var(--text)">${totalNew}</div>
+      <div style="font-size:.6rem;color:var(--muted)">${total>0?Math.round(totalNew/total*100):0}%</div>
+    </div>
+    <div style="background:var(--surface2);padding:.6rem .9rem;">
+      <div style="font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Rework</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:var(--muted)">${totalRework}</div>
+      <div style="font-size:.6rem;color:var(--muted)">${reworkPct}%</div>
+    </div>
+    <div style="background:var(--surface2);padding:.6rem .9rem;">
+      <div style="font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Rework rate</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:${reworkPct>20?'#FF8A65':reworkPct>10?'#FFB74D':'#69F0AE'}">${reworkPct}%</div>
+      <div style="font-size:.6rem;color:var(--muted)">${reworkPct>20?'↑ above target':'✓ on track'}</div>
+    </div>`;
+
+  if(window.ChartDataLabels) Chart.register(ChartDataLabels);
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return null;
+  return new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:weeks,
+      datasets:[
+        { label:'New design',    data:weeks.map(w=>wm[w].new),    backgroundColor:ccBar('#4FC3F7','CC'), borderColor:ccBar('#4FC3F7'), borderWidth:1, borderRadius:2, stack:'counts', yAxisID:'y' },
+        { label:'Design rework', data:weeks.map(w=>wm[w].rework), backgroundColor:ccBar('#FFB74D','CC'), borderColor:ccBar('#FFB74D'), borderWidth:1, borderRadius:2, stack:'counts', yAxisID:'y' },
+        { label:'Rework %',      data:rateData, type:'line', yAxisID:'y2',
+          borderColor:ccBar('#CE93D8'), backgroundColor:'transparent',
+          pointBackgroundColor:ccBar('#CE93D8'), pointRadius:3, pointHoverRadius:5,
+          borderWidth:2, tension:.35, datalabels:{display:false} }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        datalabels: window.ChartDataLabels ? {
+          anchor:'center', align:'center', color:'#fff',
+          font:{family:"'DM Mono',monospace", size:16, weight:'500'},
+          formatter:(v,ctx)=>ctx.dataset.type==='line'?'':(v>0?v:''),
+        } : {display:false},
+        tooltip:{callbacks:{afterBody:(items)=>{
+          const wk=items[0]?.label;
+          if(!wk||!wm[wk]) return '';
+          const t=wm[wk].new+wm[wk].rework;
+          return `Total: ${t}  |  Rework: ${t>0?Math.round(wm[wk].rework/t*100):0}%`;
+        }}}
+      },
+      scales:{
+        x:{ stacked:true, ticks:{color:cc().tick, font:{size:11}, autoSkip:true, maxRotation:45}, grid:{color:cc().grid} },
+        y:{ stacked:true, beginAtZero:true, position:'left',
+            ticks:{color:cc().tickFade, font:{size:11}, stepSize:1, callback:v=>Number.isInteger(v)?v:''},
+            grid:{color:cc().grid},
+            title:{display:true, text:'Designs', color:cc().tickDim, font:{size:10}} },
+        y2:{ beginAtZero:true, max:100, position:'right',
+             ticks:{color:cc().purple, font:{size:11}, callback:v=>v+'%'},
+             grid:{drawOnChartArea:false},
+             title:{display:true, text:'Rework %', color:cc().purple, font:{size:10}} }
+      }
+    }
+  });
+}
+
+function renderTeamReports(){
+  /* All rows per level — use rawRows so slicer controls date range internally */
+  const allRows=rawRows;
+  const allDates=allRows.map(r=>parseDate(colJ(r))).filter(d=>d&&!isNaN(d));
+  if(!allDates.length){
+    document.getElementById('tr-q-slicer').innerHTML='';
+    document.getElementById('tr-m-slicer').innerHTML='';
+    document.getElementById('tr-range-label').textContent='No data';
+    return;
+  }
+  const latestDate=new Date(Math.max(...allDates));
+  const latestYear=latestDate.getFullYear();
+  const latestQ   =getQuarter(latestDate);
+  if(!trSelYear) trSelYear=latestYear;
+  if(!trSelQ)   trSelQ=latestQ;
+
+  /* Quarter slicer */
+  const availQSet=new Set();
+  allDates.forEach(d=>availQSet.add(`${d.getFullYear()}-Q${getQuarter(d)}`));
+  const availQs=[...availQSet].sort();
+  document.getElementById('tr-q-slicer').innerHTML=availQs.map(yq=>{
+    const [yr,q]=yq.split('-Q');
+    const active=(parseInt(yr)===trSelYear&&parseInt(q)===trSelQ)?'active':'';
+    return `<button class="slicer-btn ${active}" onclick="trSelectQ(${yr},${q})">${yq}</button>`;
+  }).join('');
+
+  /* Month slicer */
+  const qMonths=Q_MONTHS[trSelQ]||[];
+  const availMonths=new Set(
+    allDates.filter(d=>d.getFullYear()===trSelYear&&getQuarter(d)===trSelQ).map(d=>d.getMonth())
+  );
+  document.getElementById('tr-m-slicer').innerHTML=
+    `<button class="slicer-btn ${trSelMonth===null?'active':''}" onclick="trSelectMonth(null)">All</button>`+
+    qMonths.filter(m=>availMonths.has(m)).map(m=>{
+      const active=(trSelMonth===m)?'active':'';
+      return `<button class="slicer-btn ${active}" onclick="trSelectMonth(${m})">${MONTH_NAMES[m]}</button>`;
+    }).join('');
+
+  /* Date range */
+  let rangeStart, rangeEnd, rangeLabel;
+  const ytdBtn=document.getElementById('tr-ytd-btn');
+  if(ytdBtn) ytdBtn.classList.toggle('active',trSelYTD);
+  if(trSelYTD){
+    rangeStart=new Date(trSelYear,0,1);
+    rangeEnd  =new Date(trSelYear,11,31,23,59,59);
+    rangeLabel=`YTD ${trSelYear}`;
+  } else if(trSelMonth!==null){
+    rangeStart=new Date(trSelYear,trSelMonth,1);
+    rangeEnd  =new Date(trSelYear,trSelMonth+1,0,23,59,59);
+    rangeLabel=`${MONTH_NAMES[trSelMonth]} ${trSelYear}`;
+  } else {
+    rangeStart=new Date(trSelYear,(trSelQ-1)*3,1);
+    rangeEnd  =new Date(trSelYear,trSelQ*3,0,23,59,59);
+    rangeLabel=`Q${trSelQ} ${trSelYear} — ${rangeStart.toLocaleDateString([],{month:'short',day:'numeric'})} to ${rangeEnd.toLocaleDateString([],{month:'short',day:'numeric'})}`;
+  }
+  document.getElementById('tr-range-label').textContent=rangeLabel;
+
+  /* Filter per level */
+  function filterLevel(level){
+    return allRows.filter(r=>{
+      if(getLevel(colG(r))!==level) return false;
+      const d=parseDate(colJ(r));
+      return d&&d>=rangeStart&&d<=rangeEnd;
+    });
+  }
+  const lotRows  = filterLevel('Lot-Level Design');
+  const commRows = filterLevel('Community-Level Design');
+  const comlRows = filterLevel('Commercial Design');
+
+  trLotChart  = renderTeamChart('trLotChart', 'tr-lot-summary',  lotRows,  '#4FC3F7', trLotChart,  'Lot-Level');
+  trCommChart = renderTeamChart('trCommChart','tr-comm-summary', commRows, '#69F0AE', trCommChart, 'Community-Level');
+  trComlChart = renderTeamChart('trComlChart','tr-coml-summary', comlRows, '#FFB74D', trComlChart, 'Commercial');
+}
+
+function trSelectQ(year,q){
+  trSelYear=parseInt(year); trSelQ=parseInt(q); trSelMonth=null; trSelYTD=false;
+  renderTeamReports();
+}
+function trSelectMonth(m){
+  trSelMonth=(m===null)?null:parseInt(m); trSelYTD=false;
+  renderTeamReports();
+}
+function trSelectYTD(){
+  trSelYTD=!trSelYTD; if(trSelYTD) trSelMonth=null;
+  renderTeamReports();
 }
 
 /* ── SCREEN 6 — SLA REPORT ── */
@@ -3607,7 +3765,7 @@ function openSettings(){
   if(status)     status.textContent = saved ? '✓ Token saved in this browser' : 'No token saved yet';
 
   /* Screen visibility */
-  const SCREEN_NAMES=['Design Pipeline','Designer Performance','Level Breakdown','Daily Output & Ranking','Productivity Equivalency','Lot-Level Team Report','Community-Level Team Report','SLA Report','FPY Report','Design Pass Rate'];
+  const SCREEN_NAMES=['Design Pipeline','Designer Performance','Level Breakdown','Daily Output & Ranking','Productivity Equivalency','Team Reports','SLA Report','FPY Report','Design Pass Rate'];
   const vis=document.getElementById('settings-screen-visibility');
   if(vis) vis.innerHTML=SCREEN_NAMES.map((name,i)=>`
     <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;">
@@ -3637,7 +3795,7 @@ function saveSettings(){
 
   /* Save screen visibility */
   hiddenScreens=new Set();
-  for(let i=0;i<10;i++){
+  for(let i=0;i<9;i++){
     const el=document.getElementById('screen-vis-'+i);
     if(el&&!el.checked) hiddenScreens.add(i);
   }
