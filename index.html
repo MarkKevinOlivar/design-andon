@@ -568,6 +568,33 @@ body.light-mode .leg-dot { filter:grayscale(1) brightness(0.3); }
           </div>
         </div>
 
+        <!-- DESIGN OTD -->
+        <div class="summary-block" id="s3-otd-block">
+          <div class="summary-block-title" style="color:var(--text);">📦 Design OTD <span style="font-size:.65rem;font-weight:400;color:var(--muted);margin-left:.5rem">On Time Delivery — completed on or before due date</span></div>
+          <div class="summary-tiles">
+            <div class="summary-tile">
+              <div class="tc-label">OTD %</div>
+              <div class="tc-value s3" id="s3-otd-pct" style="color:var(--pass)">—</div>
+              <div class="tc-sub" id="s3-otd-sub">— pass / — fail</div>
+            </div>
+            <div class="summary-tile" style="background:rgba(79,195,247,.06)">
+              <div class="tc-label" style="color:var(--muted)">Lot-level</div>
+              <div class="tc-value s3" id="s3-otd-lot" style="color:var(--lot)">—</div>
+              <div class="tc-sub" id="s3-otd-lot-sub">—</div>
+            </div>
+            <div class="summary-tile" style="background:rgba(105,240,174,.06)">
+              <div class="tc-label" style="color:var(--muted)">Community-level</div>
+              <div class="tc-value s3" id="s3-otd-comm" style="color:var(--community)">—</div>
+              <div class="tc-sub" id="s3-otd-comm-sub">—</div>
+            </div>
+            <div class="summary-tile" style="background:rgba(255,183,77,.06)">
+              <div class="tc-label" style="color:var(--muted)">Commercial</div>
+              <div class="tc-value s3" id="s3-otd-coml" style="color:var(--commercial)">—</div>
+              <div class="tc-sub" id="s3-otd-coml-sub">—</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1061,7 +1088,9 @@ const TYPE_TO_LEVEL = {
   'Master Permit Package':         'Community-Level Design',
   'Master Plan':                   'Community-Level Design',
   'Future Solar Exhibit':          'Community-Level Design',
-  'NH Commercial Design - Maxfit': 'Commercial Design',
+  'NH Commercial Design - Maxfit':    'Commercial Design',
+  'NH Commercial Project - Estimate': 'Commercial Design',
+  'PVbid Project Estimate':           'Commercial Design',
   'Solar Site Plan':               'Community-Level Design'
 };
 const LEVELS    = ['Lot-Level Design','Community-Level Design','Commercial Design'];
@@ -1078,7 +1107,9 @@ const DEFAULT_PEQ_WEIGHTS = {
   'Future Solar Exhibit':          6,
   'Individual Plot Plan':          1,
   'Individual Permit Package':     2,
-  'NH Commercial Design - Maxfit': 6,
+  'NH Commercial Design - Maxfit':    6,
+  'NH Commercial Project - Estimate': 6,
+  'PVbid Project Estimate':           6,
   'Solar Site Plan':               2,
 };
 let peqWeights = {...DEFAULT_PEQ_WEIGHTS};
@@ -1093,11 +1124,11 @@ const DEFAULT_NEW_HIRES = [
   'Alzech Ruzner Dela Cuesta'
 ];
 let newHires = [...DEFAULT_NEW_HIRES]; /* mutable — editable via UI */
-const SLA_TYPES = ['Master Plan','Individual Plot Plan','Individual Permit Package','NH Commercial Design - Maxfit','Master Permit Package','Future Solar Exhibit','Solar Site Plan'];
+const SLA_TYPES = ['Master Plan','Individual Plot Plan','Individual Permit Package','NH Commercial Design - Maxfit','NH Commercial Project - Estimate','PVbid Project Estimate','Master Permit Package','Future Solar Exhibit','Solar Site Plan'];
 const DEFAULT_SLA_TARGETS = {
-  avg: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
-  p50: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
-  p90: { 'Master Plan':5,'Individual Plot Plan':4,'Individual Permit Package':4,'NH Commercial Design - Maxfit':5,'Master Permit Package':5,'Future Solar Exhibit':5,'Solar Site Plan':5 },
+  avg: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
+  p50: { 'Master Plan':3,'Individual Plot Plan':2,'Individual Permit Package':2,'NH Commercial Design - Maxfit':3,'NH Commercial Project - Estimate':3,'PVbid Project Estimate':3,'Master Permit Package':3,'Future Solar Exhibit':3,'Solar Site Plan':3 },
+  p90: { 'Master Plan':5,'Individual Plot Plan':4,'Individual Permit Package':4,'NH Commercial Design - Maxfit':5,'NH Commercial Project - Estimate':5,'PVbid Project Estimate':5,'Master Permit Package':5,'Future Solar Exhibit':5,'Solar Site Plan':5 },
 };
 let slaTargets = {
   avg: {...DEFAULT_SLA_TARGETS.avg},
@@ -1128,6 +1159,7 @@ function col(r,i){return(Object.values(r)[i]||'').toString().trim();}
 function colG(r){return col(r,6);}
 function colI(r){return col(r,8);}
 function colJ(r){return col(r,9);}
+function colDue(r){return r[33]||''; } // Design Due Date
 function colAF(r){return col(r,31);}
 function colX(r){return col(r,23);}  /* Column X = index 23, rework flag */
 function colZ(r){return col(r,25);}  /* Column Z  = index 25 = Process Step Created */
@@ -1136,6 +1168,24 @@ function colAD(r){return col(r,29);}  /* Column AD = index 29 = FPY Pass/Fail fl
 function getLevel(t){return TYPE_TO_LEVEL[t]||'Other';}
 function parseQual(v){if(!v)return null;const n=parseFloat(v.toString().replace('%',''));return isNaN(n)?null:n;}
 function avgQual(rows){const v=rows.map(r=>parseQual(colAF(r))).filter(x=>x!==null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+
+/**
+ * Design OTD — On Time Delivery
+ * Pass  = Process Design Completed (colJ) <= Design Due Date (colDue / r[33])
+ * Fail  = Process Design Completed > Design Due Date
+ * Rows missing either date are excluded from the count.
+ */
+function calcOTD(rows){
+  let pass=0, fail=0;
+  rows.forEach(r=>{
+    const completed=parseDate(colJ(r));
+    const due=parseDate(colDue(r));
+    if(!completed||!due||isNaN(completed)||isNaN(due)) return;
+    if(completed<=due) pass++; else fail++;
+  });
+  const total=pass+fail;
+  return {pass, fail, total, pct: total>0 ? Math.round(pass/total*100) : null};
+}
 function qColor(p){const lm=document.body.classList.contains('light-mode');if(p===null)return'var(--dim)';if(p>=90)return lm?'#000':'#69F0AE';if(p>=75)return lm?'#666':'#FFB74D';return lm?'#999':'#FF8A65';}
 
 /* Last N work days (Mon–Fri, skip weekends) */
@@ -1190,11 +1240,15 @@ let lotStrucURL   = 'https://raw.githubusercontent.com/MarkKevinOlivar/design-an
 let commDesignURL = 'https://raw.githubusercontent.com/MarkKevinOlivar/design-andon/main/Community%20Design%20and%20QA.csv';
 let commElecURL   = 'https://raw.githubusercontent.com/MarkKevinOlivar/design-andon/main/Community%20Electrical%20Review.csv';
 let commStrucURL  = 'https://raw.githubusercontent.com/MarkKevinOlivar/design-andon/main/Community%20Structural%20Review.csv';
+
+/* ── WW22+ COMMERCIAL SOURCE ── */
+let commCommercialURL = 'https://raw.githubusercontent.com/MarkKevinOlivar/design-andon/main/Commercial.csv';
 /* WW21/22 boundary: ISO WW21 2026 ends May 24 23:59:59; WW22 starts May 25 */
 const WW22_CUTOFF = new Date(2026, 4, 24, 23, 59, 59);
 let legacyDesignRaws = []; // original design.csv rows, stored for merge
 let lotDesignRaws = [], lotQARaws = [], lotElecRaws = [], lotStrucRaws = [];
 let commDesignRaws = [], commElecRaws = [], commStrucRaws = [];
+let commCommercialRaws = [];
 
 let autoReloadTimer = null;
 let fpyAutoReloadTimer = null;
@@ -1249,6 +1303,14 @@ function parseDesignCSV(text, firstLoad){
     showStatus(`↻ Refreshed — ${rawRows.length} rows`,'success');
     setTimeout(()=>{const el=document.getElementById('status-bar');if(el)el.style.display='none';},3000);
     buildScreenQuarterSlicers();
+    // If new-source data is already in memory, re-merge so we don't
+    // overwrite the merged rawRows with legacy-only CSV data (race condition fix).
+    if(lotDesignRaws.length || commDesignRaws.length || commCommercialRaws.length){
+      mergeAndApply();
+    } else {
+      applyFilters();
+    }
+    return; // applyFilters already called inside mergeAndApply / above
   }
   applyFilters();
 }
@@ -1286,7 +1348,7 @@ function fetchCSVPromise(url, name){
     .catch(err=>{console.warn(name+' fetch failed:',err.message); return [];});
 }
 
-/** Fetch all 4 new sources; merge + re-render when done */
+/** Fetch all new sources; merge + re-render when done */
 function fetchAllNewSources(){
   Promise.allSettled([
     fetchCSVPromise(lotDesignURL,'Lot Design').then(d=>{lotDesignRaws=d;}),
@@ -1295,7 +1357,8 @@ function fetchAllNewSources(){
     fetchCSVPromise(lotStrucURL,'Lot Structural').then(d=>{lotStrucRaws=d;}),
     fetchCSVPromise(commDesignURL,'Community Design').then(d=>{commDesignRaws=d;}),
     fetchCSVPromise(commElecURL,'Community Electrical').then(d=>{commElecRaws=d;}),
-    fetchCSVPromise(commStrucURL,'Community Structural').then(d=>{commStrucRaws=d;})
+    fetchCSVPromise(commStrucURL,'Community Structural').then(d=>{commStrucRaws=d;}),
+    fetchCSVPromise(commCommercialURL,'Commercial').then(d=>{commCommercialRaws=d;})
   ]).then(()=>{
     if(legacyDesignRaws.length) mergeAndApply();
   });
@@ -1341,7 +1404,7 @@ function buildQAMap(qaRows){
 function buildLotDesignRow(s1Row, qaMap){
   const lotId=col(s1Row,0);
   const qa=qaMap[lotId]||{score:'',passFail:''};
-  const r=new Array(32).fill('');
+  const r=new Array(34).fill('');
   r[0] =lotId;           // Community Lot ID
   r[1] =col(s1Row,1);    // Days Open (SLA, direct)
   r[6] =col(s1Row,6);    // Type of Design   → colG
@@ -1352,6 +1415,7 @@ function buildLotDesignRow(s1Row, qaMap){
   r[29]=qa.passFail;     // Pass/Fail        → colAD
   r[31]=qa.score;        // Quality Score %  → colAF
   r[32]=qa.auditor||'';  // Quality Auditor  → r[32]
+  r[33]=col(s1Row,7);    // Design Due Date  → colDue (col H)
   return r;
 }
 
@@ -1371,7 +1435,7 @@ function buildLotDesignRow(s1Row, qaMap){
  *  r[32]      → Quality Auditor        ← col J (index 9)
  */
 function buildCommDesignRow(s1Row){
-  const r=new Array(33).fill('');
+  const r=new Array(34).fill('');
   r[0] =col(s1Row,0);   // Configuration ID (join key)
   r[1] =col(s1Row,1);   // SLA direct
   r[6] =col(s1Row,6);   // Design Type      → colG
@@ -1383,6 +1447,32 @@ function buildCommDesignRow(s1Row){
   r[29]=col(s1Row,10);  // Pass/Fail        → colAD
   r[31]=col(s1Row,11);  // Quality Score %  → colAF
   r[32]=col(s1Row,9);   // Quality Auditor  → r[32]
+  r[33]=col(s1Row,7);   // Design Due Date  → colDue (col H)
+  return r;
+}
+
+/**
+ * Build a 34-element row from Commercial.csv.
+ *  col A (0) → Configuration ID  (join key)
+ *  col B (1) → SLA
+ *  col C (2) → Design Started Date     → colZ  (r[25])
+ *  col D (3) → Estimated Completion    → colJ  (r[9])  & colAA (r[26])
+ *  col E (4) → Designer: Full Name     → colI  (r[8])
+ *  col G (6) → Design Notes (type)     → hardcoded 'NH Commercial Design - Maxfit' so getLevel() works
+ *  col H (7) → Design Due Date         → colDue (r[33])
+ *  col I (8) → Request Type            → Rework colX (r[23]): 'Revision'→'2', else '0'
+ */
+function buildCommercialRow(s1Row){
+  const r=new Array(34).fill('');
+  r[0] =col(s1Row,0);   // Configuration ID
+  r[1] =col(s1Row,1);   // SLA
+  r[6] =col(s1Row,6)||'PVbid Project Estimate'; // Design Notes (type) → both commercial types map to 'Commercial Design'
+  r[8] =col(s1Row,4);   // Designer         → colI
+  r[9] =col(s1Row,3);   // Estimated Completion → colJ
+  r[23]=col(s1Row,8)==='Revision'?'2':'0'; // Request Type → Rework
+  r[25]=col(s1Row,2);   // Design Started   → colZ
+  r[26]=col(s1Row,3);   // Estimated Completion → colAA
+  r[33]=col(s1Row,7);   // Design Due Date  → colDue (col H)
   return r;
 }
 
@@ -1419,7 +1509,15 @@ function mergeAndApply(){
     })
     .map(r=>buildCommDesignRow(r));
 
-  rawRows=[...legacyRows,...newLotRows,...newCommRows];
+  // Commercial rows: col D (index 3) = Estimated Completion = design completed date
+  const newCommercialRows=commCommercialRaws
+    .filter(r=>{
+      const d=parseDate(col(r,3));
+      return d&&!isNaN(d)&&d>WW22_CUTOFF;
+    })
+    .map(r=>buildCommercialRow(r));
+
+  rawRows=[...legacyRows,...newLotRows,...newCommRows,...newCommercialRows];
   buildScreenQuarterSlicers();
   applyFilters();
 }
@@ -1697,6 +1795,43 @@ function renderScreen3(designers,rows){
   document.getElementById('s3-ip-comm').textContent=ipComm;
   document.getElementById('s3-ip-coml').textContent=ipComl;
   document.getElementById('s3-ip-ts').textContent  =ipAll>0?new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'—';
+
+  /* ── Design OTD ── */
+  function otdSub(o){ return o.total>0?o.pass+' pass / '+o.fail+' fail':'no due dates'; }
+  function otdPctText(o){ return o.pct!==null?o.pct+'%':'—'; }
+  function otdColor(o){
+    if(o.pct===null) return 'var(--muted)';
+    return o.pct>=90?'var(--pass)':o.pct>=70?'var(--warning,#FFB74D)':'var(--fail)';
+  }
+
+  const lotRows  = rows.filter(r=>getLevel(colG(r))==='Lot-Level Design');
+  const commRows = rows.filter(r=>getLevel(colG(r))==='Community-Level Design');
+  const comlRows = rows.filter(r=>getLevel(colG(r))==='Commercial Design');
+
+  const otdAll  = calcOTD(rows);
+  const otdLot  = calcOTD(lotRows);
+  const otdComm = calcOTD(commRows);
+  const otdComl = calcOTD(comlRows);
+
+  const otdPctEl = document.getElementById('s3-otd-pct');
+  otdPctEl.textContent = otdPctText(otdAll);
+  otdPctEl.style.color = otdColor(otdAll);
+  document.getElementById('s3-otd-sub').textContent      = otdSub(otdAll);
+
+  const otdLotEl = document.getElementById('s3-otd-lot');
+  otdLotEl.textContent = otdPctText(otdLot);
+  otdLotEl.style.color = otdColor(otdLot);
+  document.getElementById('s3-otd-lot-sub').textContent  = otdSub(otdLot);
+
+  const otdCommEl = document.getElementById('s3-otd-comm');
+  otdCommEl.textContent = otdPctText(otdComm);
+  otdCommEl.style.color = otdColor(otdComm);
+  document.getElementById('s3-otd-comm-sub').textContent = otdSub(otdComm);
+
+  const otdComlEl = document.getElementById('s3-otd-coml');
+  otdComlEl.textContent = otdPctText(otdComl);
+  otdComlEl.style.color = otdColor(otdComl);
+  document.getElementById('s3-otd-coml-sub').textContent = otdSub(otdComl);
 }
 
 /* SCREEN 4 — Lot-Level Weekly Report (ISO week, quarter+month slicers) */
