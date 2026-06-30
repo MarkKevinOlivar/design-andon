@@ -464,14 +464,14 @@
      ════════════════════════════════════════════════ -->
 <div id="team-funding" class="team-section" style="display:none;">
 <div class="screen-nav">
-  <button class="screen-btn active" onclick="fSwitchScreen(0)">💳 M2 Weekly FPY</button>
-  <button class="screen-btn" onclick="fSwitchScreen(1)">📋 M1 Weekly FPY</button>
+  <button class="screen-btn active" onclick="fSwitchScreen(1)">📋 M1 Weekly FPY</button>
+  <button class="screen-btn" onclick="fSwitchScreen(0)">💳 M2 Weekly FPY</button>
   <button class="screen-btn" onclick="fSwitchScreen(2)">📊 Reject Pareto</button>
   <button class="screen-btn" onclick="fSwitchScreen(3)">🌿 Lifestyle Projects</button>
 </div>
 
 <!-- FUNDING SCREEN 0 — M2 WEEKLY FPY -->
-<div class="screen active" id="fs0">
+<div class="screen" id="fs0">
   <div class="controls">
     <span class="ctrl-label">Filter:</span>
     <button class="ctrl-btn" id="fs0-all"    onclick="fSetFilter('all')">All WW</button>
@@ -502,12 +502,15 @@
 </div>
 
 <!-- FUNDING SCREEN 1 — M1 WEEKLY FPY -->
-<div class="screen" id="fs1">
+<div class="screen active" id="fs1">
   <div class="controls">
     <span class="ctrl-label">Filter:</span>
     <button class="ctrl-btn active" id="fs1-all"    onclick="fSetM1Filter('all')">All WW</button>
     <button class="ctrl-btn"        id="fs1-recent" onclick="fSetM1Filter('recent')">Last 13 WW</button>
     <button class="ctrl-btn"        id="fs1-latest" onclick="fSetM1Filter('latest')">Last 4 WW</button>
+    <button class="ctrl-btn"        id="fs1-fy"     onclick="fSetM1Filter('fy')">Current Year</button>
+    <button class="ctrl-btn"        id="fs1-fq"     onclick="fSetM1Filter('fq')">Current Quarter</button>
+    <button class="ctrl-btn"        id="fs1-fm"     onclick="fSetM1Filter('fm')">Current Month</button>
   </div>
   <div style="padding:10px 0 0;">
     <div class="legend">
@@ -600,6 +603,9 @@
     <button class="ctrl-btn active" id="ars0-all"    onclick="arSetFilter('all')">All WW</button>
     <button class="ctrl-btn"        id="ars0-recent" onclick="arSetFilter('recent')">Last 8 WW</button>
     <button class="ctrl-btn"        id="ars0-latest" onclick="arSetFilter('latest')">Last 4 WW</button>
+    <button class="ctrl-btn"        id="ars0-fy"     onclick="arSetFilter('fy')">Current Year</button>
+    <button class="ctrl-btn"        id="ars0-fq"     onclick="arSetFilter('fq')">Current Quarter</button>
+    <button class="ctrl-btn"        id="ars0-fm"     onclick="arSetFilter('fm')">Current Month</button>
   </div>
   <div style="padding:10px 0 0;">
     <div class="legend">
@@ -672,6 +678,13 @@
       <span class="leg-item"><span class="leg-dot" style="background:var(--red)"></span> &lt; 70% — Off Target</span>
       <span style="font-size:10px;color:var(--muted);margin-left:8px;">Source: Design Andon Board · Q2 2026 (W15–W26)</span>
     </div>
+    <div class="ctrl-bar" style="margin:4px 0 8px;">
+      <button class="ctrl-btn active" id="dc4-all"    onclick="dSetC4Filter('all')">All WW</button>
+      <button class="ctrl-btn"        id="dc4-recent" onclick="dSetC4Filter('recent')">Last 13 WW</button>
+      <button class="ctrl-btn"        id="dc4-latest" onclick="dSetC4Filter('latest')">Last 4 WW</button>
+      <button class="ctrl-btn"        id="dc4-fq"     onclick="dSetC4Filter('fq')">Current Quarter</button>
+      <button class="ctrl-btn"        id="dc4-fm"     onclick="dSetC4Filter('fm')">Current Month</button>
+    </div>
     <div class="section-hdr">
       <span class="section-title">C4: Community Award to Final Design Approved</span>
       <span class="section-pill pill-blue">YTD 2026</span>
@@ -691,6 +704,13 @@
       <span class="leg-item"><span class="leg-dot" style="background:var(--orange)"></span> 70–84% — At Risk</span>
       <span class="leg-item"><span class="leg-dot" style="background:var(--red)"></span> &lt; 70% — Off Target</span>
       <span style="font-size:10px;color:var(--muted);margin-left:8px;">Source: Design Andon Board · 2026-W14 – 2026-W26</span>
+    </div>
+    <div class="ctrl-bar" style="margin:4px 0 8px;">
+      <button class="ctrl-btn active" id="dl7-all"    onclick="dSetL7Filter('all')">All WW</button>
+      <button class="ctrl-btn"        id="dl7-recent" onclick="dSetL7Filter('recent')">Last 13 WW</button>
+      <button class="ctrl-btn"        id="dl7-latest" onclick="dSetL7Filter('latest')">Last 4 WW</button>
+      <button class="ctrl-btn"        id="dl7-fq"     onclick="dSetL7Filter('fq')">Current Quarter</button>
+      <button class="ctrl-btn"        id="dl7-fm"     onclick="dSetL7Filter('fm')">Current Month</button>
     </div>
     <div class="section-hdr">
       <span class="section-title">L7: Lot Design Requested to Lot Design Completed</span>
@@ -1383,6 +1403,9 @@ const iWeeklyData=[
   {ww:'WW21',yr:2026,passed:20,  failed:0,  total:20,  fpy:100.0},
   {ww:'WW22',yr:2026,passed:16,  failed:0,  total:16,  fpy:100.0},
   {ww:'WW23',yr:2026,passed:36,  failed:0,  total:36,  fpy:100.0},
+  {ww:'WW24',yr:2026,passed:35,  failed:0,  total:35,  fpy:100.0},
+  {ww:'WW25',yr:2026,passed:27,  failed:0,  total:27,  fpy:100.0},
+  {ww:'WW26',yr:2026,passed:35,  failed:2,  total:37,  fpy:94.6},
 ];
 
 // Pre-compute duplicate WW labels for year context
@@ -1467,6 +1490,8 @@ const iCycleTimeData=[
   {ww:'WW12',days:24.3},{ww:'WW13',days:10.4},{ww:'WW14',days:16.8},{ww:'WW15',days:15.1},
   {ww:'WW16',days:16.3},{ww:'WW17',days:10.0},{ww:'WW18',days:4.7}, {ww:'WW19',days:11.3},
   {ww:'WW20',days:14.2},
+  {ww:'WW21',days:2.9},{ww:'WW22',days:29.7},{ww:'WW23',days:22.8},
+  {ww:'WW24',days:4.8},{ww:'WW25',days:52.3},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -1750,16 +1775,23 @@ function fFilterWeekly(){
   if(fWWFilter==='fm')return d.filter(r=>r.yr===fCurrFY&&jFMonth(r.ww,r.yr)===fCurrFMonth);
   return d;
 }
+const fM1LastRef=fM1Data[fM1Data.length-1];
+const fM1CurrFY=fM1LastRef.yr;
+const fM1CurrFQ=jFQLabel(fM1LastRef.ww);
+const fM1CurrFMonth=jFMonth(fM1LastRef.ww,fM1LastRef.yr);
 let fM1Filter='all';
 function fSetM1Filter(f){
   fM1Filter=f;
-  ['all','recent','latest'].forEach(k=>{const b=document.getElementById('fs1-'+k);if(b)b.classList.toggle('active',k===f);});
+  ['all','recent','latest','fy','fq','fm'].forEach(k=>{const b=document.getElementById('fs1-'+k);if(b)b.classList.toggle('active',k===f);});
   fRenderM1();
 }
 function fFilterM1(){
   const d=fM1Data;
   if(fM1Filter==='recent')return d.slice(-13);
   if(fM1Filter==='latest')return d.slice(-4);
+  if(fM1Filter==='fy')return d.filter(r=>r.yr===fM1CurrFY);
+  if(fM1Filter==='fq')return d.filter(r=>r.yr===fM1CurrFY&&jFQLabel(r.ww)===fM1CurrFQ);
+  if(fM1Filter==='fm')return d.filter(r=>r.yr===fM1CurrFY&&jFMonth(r.ww,r.yr)===fM1CurrFMonth);
   return d;
 }
 function fWWLabel(r){return r.ww+"'"+(r.yr%100);}
@@ -1910,15 +1942,22 @@ function arRateColor(v){if(v===100)return'color:var(--green)';if(v>=95)return'co
 function arRateStatus(v){if(v===100)return'✅ On Target';if(v>=95)return'🔶 Near Target';if(v>=80)return'⚠️ Caution';return'🔴 Off Target';}
 function arPtColor(v){if(v===100)return'#00c853';if(v>=95)return'#ffd600';if(v>=80)return'#ff6d00';return'#f44336';}
 
+const arLastRef=arData[arData.length-1];
+const arCurrFY=arLastRef.yr;
+const arCurrFQ=jFQLabel(arLastRef.ww);
+const arCurrFMonth=jFMonth(arLastRef.ww,arLastRef.yr);
 let arFilter='all';
 function arSetFilter(f){
   arFilter=f;
-  ['all','recent','latest'].forEach(k=>{const b=document.getElementById('ars0-'+k);if(b)b.classList.toggle('active',k===f);});
+  ['all','recent','latest','fy','fq','fm'].forEach(k=>{const b=document.getElementById('ars0-'+k);if(b)b.classList.toggle('active',k===f);});
   arRenderWeekly();
 }
 function arFilterData(){
   if(arFilter==='recent')return arData.slice(-8);
   if(arFilter==='latest')return arData.slice(-4);
+  if(arFilter==='fy')return arData.filter(r=>r.yr===arCurrFY);
+  if(arFilter==='fq')return arData.filter(r=>r.yr===arCurrFY&&jFQLabel(r.ww)===arCurrFQ);
+  if(arFilter==='fm')return arData.filter(r=>r.yr===arCurrFY&&jFMonth(r.ww,r.yr)===arCurrFMonth);
   return arData;
 }
 
@@ -2215,6 +2254,58 @@ function dSwitchScreen(n){
   if(n===1&&!dL7Initialized){dRenderL7();dL7Initialized=true;}
 }
 
+// ═══════════════════════════════════════════════════════
+// DESIGN — FILTER STATE & HELPERS
+// ═══════════════════════════════════════════════════════
+function dWWNum(ww){return parseInt(ww.split('-W')[1]);}
+function dWWFQ(ww){const n=dWWNum(ww);return n<=13?'Q2':n<=26?'Q3':n<=39?'Q4':'Q1';}
+// SunPower FY: Q1=WW27-39, Q2=WW40-52, Q3=WW01-13, Q4=WW14-26
+// Using calendar month approximation
+function dWWMonth(ww){
+  const n=dWWNum(ww);
+  // Rough WW-to-month (2026): W1-4=Jan,W5-8=Feb,W9-13=Mar,W14-17=Apr,W18-21=May,W22-26=Jun
+  if(n<=4)return'January';if(n<=8)return'February';if(n<=13)return'March';
+  if(n<=17)return'April';if(n<=21)return'May';if(n<=26)return'June';
+  if(n<=30)return'July';if(n<=35)return'August';if(n<=39)return'September';
+  if(n<=43)return'October';if(n<=47)return'November';return'December';
+}
+const dC4LastWW=null; // set dynamically
+let dC4Filter='all';
+let dL7Filter='all';
+function dSetC4Filter(f){
+  dC4Filter=f;
+  ['all','recent','latest','fq','fm'].forEach(k=>{const b=document.getElementById('dc4-'+k);if(b)b.classList.toggle('active',k===f);});
+  dRenderC4();
+}
+function dSetL7Filter(f){
+  dL7Filter=f;
+  ['all','recent','latest','fq','fm'].forEach(k=>{const b=document.getElementById('dl7-'+k);if(b)b.classList.toggle('active',k===f);});
+  dRenderL7();
+}
+function dFilterC4(){
+  const last=dC4Data[dC4Data.length-1];
+  const currFQ=dWWFQ(last.ww);
+  const currFM=dWWMonth(last.ww);
+  if(dC4Filter==='recent')return dC4Data.slice(-13);
+  if(dC4Filter==='latest')return dC4Data.slice(-4);
+  if(dC4Filter==='fq')return dC4Data.filter(d=>dWWFQ(d.ww)===currFQ);
+  if(dC4Filter==='fm')return dC4Data.filter(d=>dWWMonth(d.ww)===currFM);
+  return dC4Data;
+}
+function dFilterL7(){
+  const last=dL7Labels[dL7Labels.length-1];
+  const currFQ=dWWFQ(last);
+  const currFM=dWWMonth(last);
+  const indices=dL7Labels.map((_,i)=>i);
+  let idxs;
+  if(dL7Filter==='recent')idxs=indices.slice(-13);
+  else if(dL7Filter==='latest')idxs=indices.slice(-4);
+  else if(dL7Filter==='fq')idxs=indices.filter(i=>dWWFQ(dL7Labels[i])===currFQ);
+  else if(dL7Filter==='fm')idxs=indices.filter(i=>dWWMonth(dL7Labels[i])===currFM);
+  else idxs=indices;
+  return{labels:idxs.map(i=>dL7Labels[i]),pass:idxs.map(i=>dL7Pass[i]),fail:idxs.map(i=>dL7Fail[i]),fpy:idxs.map(i=>dL7FPY[i])};
+}
+
 // C4: Community Award to Final Design Approved — weekly FPY
 // C4 Community Design FPY — source: Design Andon Board (c4DesignFpyChart + c4FpyChart)
 const dC4Data=[
@@ -2238,25 +2329,26 @@ const dL7Fail=[0,0,0,0,2,9,10,6,6,2,4,2,0];
 const dL7FPY=[100,100,100,100,93,63,80,90,89,96,84,92,100];
 
 function dRenderC4(){
-  const labels=dC4Data.map(d=>d.ww);
+  const fd=dFilterC4();
+  const labels=fd.map(d=>d.ww);
   const tc=lightMode?'#111111':'#ccc';
   const gc=lightMode?'#dce1ea':'#333';
   const tbg=lightMode?'rgba(255,255,255,0.95)':'rgba(30,30,30,0.95)';
   const tbd=lightMode?'#bbb':'#555';
-  const pts=dC4Data.map(d=>pointColor(d.fpy));
+  const pts=fd.map(d=>pointColor(d.fpy));
   if(dCI['c4'])dCI['c4'].destroy();
   dCI['c4']=new Chart(document.getElementById('d-chart-c4'),{
     data:{labels,datasets:[
-      {type:'bar',label:'Pass',data:dC4Data.map(d=>d.pass),
+      {type:'bar',label:'Pass',data:fd.map(d=>d.pass),
         backgroundColor:'rgba(0,188,212,0.55)',borderColor:'#00bcd4',borderWidth:1,borderRadius:3,order:2},
-      {type:'bar',label:'Fail',data:dC4Data.map(d=>d.fail),
+      {type:'bar',label:'Fail',data:fd.map(d=>d.fail),
         backgroundColor:'rgba(239,83,80,0.60)',borderColor:'#ef5350',borderWidth:1,borderRadius:3,order:2},
-      {type:'line',label:'C4 Design FPY %',data:dC4Data.map(d=>d.fpy),
+      {type:'line',label:'C4 Design FPY %',data:fd.map(d=>d.fpy),
         borderColor:'#00bcd4',backgroundColor:'transparent',
         borderWidth:2.5,tension:0.3,pointRadius:5,pointHoverRadius:7,
         pointBackgroundColor:pts,pointBorderColor:pts,pointBorderWidth:0,
         yAxisID:'yFPY',order:1},
-      {...mkTarget(100,labels),yAxisID:'yFPY',order:0}
+      {...mkTarget(100,fd.map(d=>d.ww)),yAxisID:'yFPY',order:0}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
@@ -2278,25 +2370,26 @@ function dRenderC4(){
 }
 
 function dRenderL7(){
+  const fd=dFilterL7();
   const tc=lightMode?'#111111':'#ccc';
   const gc=lightMode?'#dce1ea':'#333';
   const tbg=lightMode?'rgba(255,255,255,0.95)':'rgba(30,30,30,0.95)';
   const tbd=lightMode?'#bbb':'#555';
-  const fpyPts=dL7FPY.map(v=>pointColor(v));
+  const fpyPts=fd.fpy.map(v=>pointColor(v));
   if(dCI['l7'])dCI['l7'].destroy();
   dCI['l7']=new Chart(document.getElementById('d-chart-l7'),{
-    data:{labels:dL7Labels,datasets:[
-      {type:'bar',label:'Pass',data:dL7Pass,
+    data:{labels:fd.labels,datasets:[
+      {type:'bar',label:'Pass',data:fd.pass,
         backgroundColor:'rgba(100,181,246,0.55)',borderColor:'#64b5f6',borderWidth:1,borderRadius:3,order:2},
-      {type:'bar',label:'Fail',data:dL7Fail,
+      {type:'bar',label:'Fail',data:fd.fail,
         backgroundColor:'rgba(239,83,80,0.60)',borderColor:'#ef5350',borderWidth:1,borderRadius:3,order:2},
-      {type:'line',label:'L7 Design FPY %',data:dL7FPY,
+      {type:'line',label:'L7 Design FPY %',data:fd.fpy,
         borderColor:'#818cf8',backgroundColor:'transparent',
         borderWidth:2.5,tension:0.3,
         pointRadius:5,pointHoverRadius:7,
         pointBackgroundColor:fpyPts,pointBorderColor:fpyPts,pointBorderWidth:0,
         yAxisID:'yFPY',order:1},
-      {...mkTarget(100,dL7Labels),yAxisID:'yFPY',order:0}
+      {...mkTarget(100,fd.labels),yAxisID:'yFPY',order:0}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
